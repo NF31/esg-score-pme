@@ -1,0 +1,7 @@
+# Config gitleaks — scan de secrets (clés API, tokens) dans les commits.
+# Doc : https://github.com/gitleaks/gitleaks#configuration
+
+title = "esg-score-pme"
+
+[extend]
+useDefault = true
