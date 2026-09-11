@@ -17,7 +17,7 @@
 | F09b | Lint/format (ruff check + ruff format) | 🟢 | Config dans `pyproject.toml`, même règles que Atlas, 2026-09-11 |
 | F09c | CI GitHub Actions (lint + tests + SonarQube sur push/PR) | 🟢 | `.github/workflows/ci.yml`, modèle Atlas (uv + ruff + pytest), 2026-09-11 |
 | F09d | Scan de secrets (gitleaks, CI) | 🟢 | `.gitleaks.toml` + `.github/workflows/gitleaks.yml`, modèle Atlas, 2026-09-11 |
-| F09e | Analyse qualité (SonarCloud) | 🟡 | `sonar-project.properties` en place, modèle kbeauty-shop — nécessite `SONAR_TOKEN` en secret GitHub une fois le repo créé |
+| F09e | Analyse qualité (SonarCloud) | 🟢 | Automatic Analysis (app GitHub native) — job CI manuel retiré (conflit détecté avec Automatic Analysis), 2026-09-11 |
 
 ## Phase 2 — Enrichissement
 

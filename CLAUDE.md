@@ -30,7 +30,8 @@ uv run ruff format --check .   # format check
 uv run pytest                  # tests
 ```
 
-CI (lint + tests + SonarQube) et gitleaks tournent sur chaque push/PR — voir `.github/workflows/`.
+CI (lint + tests) et gitleaks tournent sur chaque push/PR — voir `.github/workflows/`. SonarCloud
+analyse via son Automatic Analysis (app GitHub native), pas de job CI dédié — cf. `docs/STACK.md`.
 
 ## Git workflow
 
