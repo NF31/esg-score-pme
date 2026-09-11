@@ -23,7 +23,7 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-CI (lint + tests + SonarQube) et scan de secrets (gitleaks) tournent automatiquement sur chaque push/PR.
+CI (lint + tests) et scan de secrets (gitleaks) tournent automatiquement sur chaque push/PR. SonarCloud analyse via son Automatic Analysis (app GitHub native), sans job CI dédié.
 
 ## Avancement
 

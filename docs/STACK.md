@@ -27,6 +27,14 @@
 | `reportlab` | F04 | Génération du rapport de synthèse en PDF |
 | `anthropic` | F14 | Extraction de données depuis des rapports RSE (PDF) via LLM |
 
+## Décision : SonarCloud en Automatic Analysis, pas en CI
+
+Le job SonarQube dans `.github/workflows/ci.yml` a été retiré : lors de l'import du projet sur
+SonarCloud, l'**Automatic Analysis** (app GitHub native) s'active par défaut et entre en conflit
+avec une analyse pilotée par token depuis la CI (erreur "project not found" côté scanner). On garde
+l'Automatic Analysis — zéro maintenance, déjà fonctionnelle — plutôt que de désactiver ce mode pour
+répliquer le pattern CI-based de kbeauty-shop.
+
 ## Principe
 
 On n'ajoute une dépendance que quand la feature qui en a besoin est attaquée — pas de lib installée "au cas où". Chaque ajout doit être justifiable en une phrase face à un jury.
