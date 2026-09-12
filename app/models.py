@@ -34,6 +34,7 @@ class Entreprise(Base):
     nom: Mapped[str] = mapped_column(String(200))
     secteur: Mapped[str] = mapped_column(String(100))
     effectif: Mapped[int]
+    siren: Mapped[str | None] = mapped_column(String(9), unique=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
 
     questionnaires: Mapped[list["Questionnaire"]] = relationship(back_populates="entreprise")

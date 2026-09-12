@@ -13,12 +13,12 @@
 | `psycopg[binary]` | F07 | Driver PostgreSQL |
 | `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) — `alembic/` |
 | `pydantic-settings` | F07 | Gestion propre des variables d'environnement (`app/config.py`, `.env`) |
+| `httpx` | F10 | Requêtes vers l'API publique recherche-entreprises.api.gouv.fr |
 
-## À ajouter plus tard — Phase 2/3 (au moment de la feature, pas avant)
+## À ajouter plus tard — Phase 3 (au moment de la feature, pas avant)
 
 | Lib | Feature liée | Pourquoi |
 |---|---|---|
-| `httpx` | F10 | Requêtes vers des sources de données publiques |
 | `anthropic` | F14 | Extraction de données depuis des rapports RSE (PDF) via LLM |
 
 ## Note : `pandas` écarté pour F03
@@ -65,8 +65,29 @@ d'un service API en ligne. Config Railway :
 - `DATABASE_URL` référence le service Postgres du même projet (`postgresql+psycopg://...`)
 - config faite via `railway` CLI/API (pas de `railway.json` versionné — cf. décision Atlas similaire)
 
-Si l'API doit un jour être exposée séparément (F10+, intégrations externes), upgrade vers le plan
+Si l'API doit un jour être exposée séparément (intégrations externes), upgrade vers le plan
 Hobby ($5/mois) ou remplacement du service unique par un process manager lançant les deux apps.
+
+## Décision : import CAC40 sans score ESG invente (F10)
+
+`app/import_entreprises.py` peuple `entreprises` avec des donnees reelles (nom, secteur,
+effectif) via l'API publique et gratuite `recherche-entreprises.api.gouv.fr` (aucune cle
+requise). Aucune API publique gratuite ne fournit de vrais scores ESG pour ces entreprises :
+le benchmark (F11) comparera donc un diagnostic a la moyenne des diagnostics reellement
+completes dans l'app pour un secteur donne, pas a un score CAC40 fabrique.
+
+**Limite assumee** : l'API expose des entites juridiques individuelles, pas le perimetre
+consolide d'un groupe. Un grand groupe diversifie (LVMH, TotalEnergies...) a des dizaines de
+filiales sous des codes NAF differents (immobilier, R&D, distribution...) ; la recherche par
+nom peut remonter une filiale peu representative de l'activite reelle du groupe. Le filtre
+`categorie_entreprise == "GE"` (grande entreprise) reduit ce bruit sans le supprimer. Le champ
+`effectif` est egalement une approximation : l'INSEE ne publie jamais l'effectif exact (secret
+statistique), seulement une tranche — on stocke le milieu de la tranche.
+
+Lancement manuel (pas au demarrage de l'app, pour ne pas dependre du reseau a chaque boot) :
+```bash
+uv run python -m app.import_entreprises
+```
 
 ## Principe
 
