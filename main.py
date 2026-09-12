@@ -4,10 +4,12 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Response
 from sqlalchemy.orm import Session
 
+from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.schemas import (
+    ComparaisonSecteurOut,
     EntrepriseCreate,
     EntrepriseOut,
     QuestionnaireCreate,
@@ -99,6 +101,19 @@ def calculer_score_questionnaire(questionnaire_id: int, db: Session = Depends(ge
         return calculer_scores(db, questionnaire_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get(
+    "/questionnaires/{questionnaire_id}/comparaison-sectorielle",
+    response_model=list[ComparaisonSecteurOut],
+)
+def comparaison_sectorielle(questionnaire_id: int, db: Session = Depends(get_db)):
+    try:
+        comparaison = comparer_secteur(db, questionnaire_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return [{"pilier": pilier, **donnees} for pilier, donnees in comparaison.items()]
 
 
 @app.get("/questionnaires/{questionnaire_id}/rapport")

@@ -1,12 +1,20 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import Pilier, StatutQuestionnaire
+from app.secteurs import SECTEURS
 
 
 class EntrepriseCreate(BaseModel):
     nom: str
-    secteur: str
+    secteur: str = Field(description=f"Un des secteurs : {', '.join(SECTEURS)}")
     effectif: int
+
+    @field_validator("secteur")
+    @classmethod
+    def secteur_connu(cls, valeur: str) -> str:
+        if valeur not in SECTEURS:
+            raise ValueError(f"secteur inconnu, doit etre l'un de : {', '.join(SECTEURS)}")
+        return valeur
 
 
 class EntrepriseOut(EntrepriseCreate):
@@ -54,3 +62,9 @@ class ScoreOut(BaseModel):
     id: int
     pilier: Pilier | None  # None = score global
     valeur: float
+
+
+class ComparaisonSecteurOut(BaseModel):
+    pilier: Pilier | None  # None = score global
+    moyenne: float
+    nb_entreprises: int

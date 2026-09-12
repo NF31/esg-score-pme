@@ -34,3 +34,15 @@ questionnaire.
 Le calcul est idempotent : relancer `/questionnaires/{id}/calculer-score` recalcule et
 remplace les scores existants plutôt que d'en accumuler, ce qui permet de recalculer
 après correction d'une réponse.
+
+## Comparaison sectorielle (F11)
+
+`/questionnaires/{id}/comparaison-sectorielle` renvoie, pour chaque pilier et le score
+global, la moyenne des scores des **autres** questionnaires `TERMINE` d'entreprises du
+même secteur (le questionnaire courant est exclu de sa propre moyenne). Aucun score
+ESG n'est inventé pour les entreprises importées en F10 (CAC40) : elles n'ont pas de
+questionnaire complété, donc ne contribuent à aucune moyenne tant qu'aucun diagnostic
+réel n'est fait en leur nom. Condition nécessaire pour que le secteur soit un critère de
+regroupement fiable : la saisie d'entreprise (formulaire et API) est contrainte à la même
+nomenclature de secteurs que l'import F10 (`app/secteurs.py`, 21 sections NAF), plutôt
+qu'un champ texte libre.
