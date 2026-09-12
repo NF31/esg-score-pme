@@ -1,11 +1,7 @@
 from unittest.mock import patch
 
-import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-
 from app.import_entreprises import importer_entreprises
-from app.models import Base, Entreprise
+from app.models import Entreprise
 
 RESULTAT_TOTALENERGIES = {
     "siren": "542051180",
@@ -14,14 +10,6 @@ RESULTAT_TOTALENERGIES = {
     "section_activite_principale": "D",
     "tranche_effectif_salarie": "53",
 }
-
-
-@pytest.fixture
-def db():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
 
 
 def test_importer_entreprises_cree_une_entreprise(db):

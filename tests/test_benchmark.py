@@ -1,54 +1,24 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
-from app.models import (
-    Base,
-    Entreprise,
-    Pilier,
-    Question,
-    Questionnaire,
-    Reponse,
-)
+from app.models import Entreprise, Pilier, Questionnaire
 from app.scoring import calculer_scores
-
-
-@pytest.fixture
-def db():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
-
-
-def _diagnostic_complet(db, secteur, reponses_par_pilier):
-    entreprise = Entreprise(nom="Une entreprise", secteur=secteur, effectif=10)
-    db.add(entreprise)
-    db.flush()
-    questionnaire = Questionnaire(entreprise_id=entreprise.id)
-    db.add(questionnaire)
-    db.flush()
-
-    for pilier, valeurs in reponses_par_pilier.items():
-        for valeur in valeurs:
-            question = Question(pilier=pilier, libelle="Q", poids=1.0)
-            db.add(question)
-            db.flush()
-            db.add(
-                Reponse(questionnaire_id=questionnaire.id, question_id=question.id, valeur=valeur)
-            )
-    db.commit()
-    calculer_scores(db, questionnaire.id)
-    return questionnaire.id
+from tests.helpers import creer_questionnaire
 
 
 def test_comparer_secteur_moyenne_les_autres_entreprises_du_meme_secteur(db):
-    _diagnostic_complet(db, "Industrie manufacturiere", {Pilier.ENVIRONNEMENT: [4, 4]})  # 100
-    _diagnostic_complet(db, "Industrie manufacturiere", {Pilier.ENVIRONNEMENT: [0, 0]})  # 0
-    questionnaire_id = _diagnostic_complet(
-        db, "Industrie manufacturiere", {Pilier.ENVIRONNEMENT: [2, 2]}
+    id1 = creer_questionnaire(
+        db, {Pilier.ENVIRONNEMENT: [4, 4]}, secteur="Industrie manufacturiere"
     )
+    calculer_scores(db, id1)
+    id2 = creer_questionnaire(
+        db, {Pilier.ENVIRONNEMENT: [0, 0]}, secteur="Industrie manufacturiere"
+    )
+    calculer_scores(db, id2)
+    questionnaire_id = creer_questionnaire(
+        db, {Pilier.ENVIRONNEMENT: [2, 2]}, secteur="Industrie manufacturiere"
+    )
+    calculer_scores(db, questionnaire_id)
 
     comparaison = comparer_secteur(db, questionnaire_id)
 
@@ -57,8 +27,12 @@ def test_comparer_secteur_moyenne_les_autres_entreprises_du_meme_secteur(db):
 
 
 def test_comparer_secteur_exclut_les_autres_secteurs(db):
-    _diagnostic_complet(db, "Construction", {Pilier.SOCIAL: [4, 4]})
-    questionnaire_id = _diagnostic_complet(db, "Industrie manufacturiere", {Pilier.SOCIAL: [2, 2]})
+    id1 = creer_questionnaire(db, {Pilier.SOCIAL: [4, 4]}, secteur="Construction")
+    calculer_scores(db, id1)
+    questionnaire_id = creer_questionnaire(
+        db, {Pilier.SOCIAL: [2, 2]}, secteur="Industrie manufacturiere"
+    )
+    calculer_scores(db, questionnaire_id)
 
     comparaison = comparer_secteur(db, questionnaire_id)
 
@@ -72,7 +46,8 @@ def test_comparer_secteur_exclut_les_questionnaires_non_termines(db):
     db.add(Questionnaire(entreprise_id=entreprise_incomplete.id))
     db.commit()
 
-    questionnaire_id = _diagnostic_complet(db, "Construction", {Pilier.SOCIAL: [2, 2]})
+    questionnaire_id = creer_questionnaire(db, {Pilier.SOCIAL: [2, 2]}, secteur="Construction")
+    calculer_scores(db, questionnaire_id)
 
     comparaison = comparer_secteur(db, questionnaire_id)
 
