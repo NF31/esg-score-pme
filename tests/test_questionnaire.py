@@ -111,3 +111,31 @@ def test_calculer_score_sans_reponse_renvoie_400():
 
     response = client.post(f"/questionnaires/{questionnaire['id']}/calculer-score")
     assert response.status_code == 400
+
+
+def test_telecharger_rapport_via_api():
+    entreprise = client.post(
+        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+    ).json()
+    questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
+    for question in client.get("/questions").json():
+        client.post(
+            f"/questionnaires/{questionnaire['id']}/reponses",
+            json={"question_id": question["id"], "valeur": 3},
+        )
+    client.post(f"/questionnaires/{questionnaire['id']}/calculer-score")
+
+    response = client.get(f"/questionnaires/{questionnaire['id']}/rapport")
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+
+
+def test_telecharger_rapport_sans_score_renvoie_400():
+    entreprise = client.post(
+        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+    ).json()
+    questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
+
+    response = client.get(f"/questionnaires/{questionnaire['id']}/rapport")
+    assert response.status_code == 400
