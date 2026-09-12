@@ -9,6 +9,7 @@
 | `ruff` | Lint + format | Un seul outil pour les deux, utilisé sur Atlas |
 | `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores — schéma défini dans `app/models.py`, pas encore branché sur une vraie base (cf. F07) |
 | `reportlab` | F04 | Génération du rapport de synthèse en PDF (`app/rapport.py`) |
+| `streamlit` | F06 | Frontend simple (`streamlit_app.py`), appelle directement les fonctions `app/` (pas de client HTTP) — cohérent avec le monolithe modulaire, pas de duplication de logique avec l'API FastAPI |
 
 ## À ajouter — Phase 1 (MVP diagnostic)
 
@@ -17,7 +18,6 @@
 | `psycopg[binary]` | F07 | Driver PostgreSQL |
 | `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) |
 | `pydantic-settings` | — | Gestion propre des variables d'environnement (`.env`) |
-| `streamlit` | F06 | Frontend simple, adapté à un outil data/diagnostic — voir justification stack précédente (pas de React) |
 
 ## À ajouter plus tard — Phase 2/3 (au moment de la feature, pas avant)
 
