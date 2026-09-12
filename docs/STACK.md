@@ -7,12 +7,12 @@
 | `fastapi[standard]` | Backend API | Typage natif, doc Swagger auto-générée, rapide à écrire seul — voir README pour la comparaison vs Django/Flask |
 | `pytest` | Tests | Standard Python, utilisé sur Atlas |
 | `ruff` | Lint + format | Un seul outil pour les deux, utilisé sur Atlas |
+| `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores — schéma défini dans `app/models.py`, pas encore branché sur une vraie base (cf. F07) |
 
 ## À ajouter — Phase 1 (MVP diagnostic)
 
 | Lib | Feature liée | Pourquoi |
 |---|---|---|
-| `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores |
 | `psycopg[binary]` | F07 | Driver PostgreSQL |
 | `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) |
 | `pandas` | F03 | Agrégation des réponses pour le calcul du score |
