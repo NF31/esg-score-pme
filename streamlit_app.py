@@ -3,10 +3,12 @@
 import streamlit as st
 from sqlalchemy.orm import Session
 
+from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.scoring import calculer_scores
+from app.secteurs import SECTEURS
 from app.seed import seed_questions
 
 LIBELLE_PILIER = {
@@ -33,7 +35,7 @@ if "questionnaire_id" not in st.session_state:
 if st.session_state.questionnaire_id is None:
     with st.form("entreprise_form"):
         nom = st.text_input("Nom de l'entreprise")
-        secteur = st.text_input("Secteur d'activite")
+        secteur = st.selectbox("Secteur d'activite", SECTEURS, index=None)
         effectif = st.number_input("Effectif", min_value=1, step=1)
         submitted = st.form_submit_button("Commencer le diagnostic")
 
@@ -89,12 +91,37 @@ else:
 
     if st.session_state.scores:
         scores = st.session_state.scores
+        with Session(engine) as db:
+            comparaison = comparer_secteur(db, st.session_state.questionnaire_id)
+
         st.divider()
-        st.metric("Score global ESG", f"{scores[None]:.0f}/100")
+        info_globale = comparaison.get(None)
+        st.metric(
+            "Score global ESG",
+            f"{scores[None]:.0f}/100",
+            delta=f"{scores[None] - info_globale['moyenne']:+.0f} vs moyenne secteur"
+            if info_globale
+            else None,
+        )
 
         colonnes = st.columns(3)
         for colonne, pilier in zip(colonnes, Pilier, strict=True):
-            colonne.metric(LIBELLE_PILIER[pilier], f"{scores.get(pilier, 0):.0f}/100")
+            info_pilier = comparaison.get(pilier)
+            colonne.metric(
+                LIBELLE_PILIER[pilier],
+                f"{scores.get(pilier, 0):.0f}/100",
+                delta=f"{scores[pilier] - info_pilier['moyenne']:+.0f} vs secteur"
+                if info_pilier and pilier in scores
+                else None,
+            )
+
+        if not comparaison:
+            st.caption("Pas encore d'autre diagnostic complete dans ce secteur pour comparer.")
+        elif info_globale:
+            st.caption(
+                f"Comparaison basee sur {info_globale['nb_entreprises']} "
+                "diagnostic(s) complete(s) dans le meme secteur."
+            )
 
         with Session(engine) as db:
             pdf_bytes = generer_rapport_pdf(db, st.session_state.questionnaire_id)
