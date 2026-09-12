@@ -3,7 +3,7 @@
 import streamlit as st
 from sqlalchemy.orm import Session
 
-from app.database import engine
+from app.database import DATABASE_URL, engine
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.scoring import calculer_scores
@@ -15,7 +15,10 @@ LIBELLE_PILIER = {
     Pilier.GOUVERNANCE: "⚖️ Gouvernance",
 }
 
-Base.metadata.create_all(engine)
+# En PostgreSQL le schéma est géré par Alembic (`alembic upgrade head`) ;
+# create_all reste utile en SQLite pour le dev rapide sans migration.
+if DATABASE_URL.startswith("sqlite"):
+    Base.metadata.create_all(engine)
 with Session(engine) as _db:
     seed_questions(_db)
 

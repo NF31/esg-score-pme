@@ -30,6 +30,9 @@ uv run streamlit run streamlit_app.py  # interface utilisateur (http://127.0.0.1
 uv run ruff check .            # lint
 uv run ruff format --check .   # format check
 uv run pytest                  # tests
+
+uv run alembic revision --autogenerate -m "description"  # après modif de app/models.py
+uv run alembic upgrade head                               # appliquer les migrations
 ```
 
 CI (lint + tests) et gitleaks tournent sur chaque push/PR — voir `.github/workflows/`. SonarCloud
