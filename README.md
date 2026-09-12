@@ -10,10 +10,9 @@ Face à la simplification réglementaire européenne (Omnibus/CSRD) et à l'inst
 
 ```bash
 uv sync
-uv run fastapi dev main.py
+uv run fastapi dev main.py       # API, sur http://127.0.0.1:8000 (doc interactive sur /docs)
+uv run streamlit run streamlit_app.py   # interface utilisateur, sur http://127.0.0.1:8501
 ```
-
-L'API tourne sur http://127.0.0.1:8000, doc interactive sur /docs.
 
 ## Qualité de code
 
