@@ -46,3 +46,11 @@ class ReponseOut(BaseModel):
     id: int
     question_id: int
     valeur: int
+
+
+class ScoreOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    pilier: Pilier | None  # None = score global
+    valeur: float

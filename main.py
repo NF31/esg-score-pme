@@ -14,7 +14,9 @@ from app.schemas import (
     QuestionOut,
     ReponseIn,
     ReponseOut,
+    ScoreOut,
 )
+from app.scoring import calculer_scores
 from app.seed import seed_questions
 
 
@@ -82,3 +84,14 @@ def submit_reponse(questionnaire_id: int, payload: ReponseIn, db: Session = Depe
     db.commit()
     db.refresh(reponse)
     return reponse
+
+
+@app.post("/questionnaires/{questionnaire_id}/calculer-score", response_model=list[ScoreOut])
+def calculer_score_questionnaire(questionnaire_id: int, db: Session = Depends(get_db)):
+    questionnaire = db.get(Questionnaire, questionnaire_id)
+    if questionnaire is None:
+        raise HTTPException(status_code=404, detail="Questionnaire introuvable")
+    try:
+        return calculer_scores(db, questionnaire_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

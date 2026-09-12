@@ -10,7 +10,8 @@ dans `README.md`.
 
 All project documentation lives in `docs/` — `docs/FEATURES.md` (backlog phasé avec statut),
 `docs/ROADMAP.md` (les 3 phases), `docs/STACK.md` (choix de libs + pourquoi, ajoutées uniquement
-quand la feature correspondante est attaquée).
+quand la feature correspondante est attaquée), `docs/SCORING.md` (formule et pondération du score
+ESG).
 
 ## Stack
 
