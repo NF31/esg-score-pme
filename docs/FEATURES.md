@@ -23,7 +23,7 @@
 
 | # | Fonctionnalité | Statut | Notes |
 |---|---|---|---|
-| F10 | Import de données publiques (entreprises CAC40/PME labellisées) | 🔴 | Pour peupler un benchmark |
+| F10 | Import de données publiques (entreprises CAC40/PME labellisées) | 🟢 | `app/import_entreprises.py` via l'API gouv.fr recherche-entreprises (nom/secteur/effectif réels, pas de score ESG inventé — cf. `docs/STACK.md`), 2026-09-12 |
 | F11 | Comparaison sectorielle (score vs moyenne secteur) | 🔴 | |
 | F12 | Recommandations priorisées (quick wins) | 🔴 | Règles simples au départ, pas besoin d'IA |
 | F13 | Historique / évolution du score dans le temps | 🔴 | Graphe simple |
