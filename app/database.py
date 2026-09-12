@@ -1,16 +1,18 @@
 """Connexion base de données.
 
-SQLite par défaut pour le développement ; F07 branchera PostgreSQL en
-changeant simplement `DATABASE_URL` (le reste du code ne change pas).
+PostgreSQL en production/dev partagé, SQLite par défaut en local — piloté par
+`DATABASE_URL` (cf. `app/config.py`). Le schéma est géré par les migrations
+Alembic (`alembic/`), pas par `Base.metadata.create_all` (sauf en tests).
 """
 
-import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./esg.db")
+from app.config import settings
+
+DATABASE_URL = settings.database_url
 
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
 engine = create_engine(DATABASE_URL, connect_args=connect_args)
