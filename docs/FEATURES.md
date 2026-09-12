@@ -5,7 +5,7 @@
 | # | Fonctionnalité | Statut | Notes |
 |---|---|---|---|
 | F00 | Setup projet (venv, FastAPI CLI, structure, git) | 🟢 | `pip install "fastapi[standard]"` + `fastapi dev/run`, 2026-09-11 |
-| F01 | Modèle de données (entreprise, questionnaire, scores) | 🔴 | Basé sur critères ESRS simplifiés |
+| F01 | Modèle de données (entreprise, questionnaire, scores) | 🟢 | `app/models.py` (SQLAlchemy 2.0), Entreprise/Question/Questionnaire/Reponse/Score, 2026-09-12 |
 | F02 | Questionnaire ESG structuré (formulaire) | 🔴 | ~20-30 questions réparties E/S/G |
 | F03 | Moteur de scoring (calcul du score global + par pilier) | 🔴 | Pondération justifiée dans le rapport |
 | F04 | Génération d'un rapport de synthèse (PDF ou page web) | 🔴 | |
