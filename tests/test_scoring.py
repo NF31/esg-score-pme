@@ -101,3 +101,51 @@ def test_calculer_scores_sans_reponse_leve_une_erreur(db):
 def test_calculer_scores_questionnaire_introuvable_leve_une_erreur(db):
     with pytest.raises(ValueError, match="introuvable"):
         calculer_scores(db, 999)
+
+
+def test_score_pilier_minimal_donne_zero(db):
+    questionnaire_id = _setup_questionnaire(db, {Pilier.GOUVERNANCE: [0, 0]})
+
+    scores = calculer_scores(db, questionnaire_id)
+
+    score_gouv = next(s for s in scores if s.pilier is Pilier.GOUVERNANCE)
+    assert score_gouv.valeur == 0.0
+
+
+def test_score_pilier_pondere_par_le_poids_des_questions(db):
+    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie", effectif=42)
+    db.add(entreprise)
+    db.flush()
+    questionnaire = Questionnaire(entreprise_id=entreprise.id)
+    db.add(questionnaire)
+    db.flush()
+
+    question_faible = Question(pilier=Pilier.ENVIRONNEMENT, libelle="Q1", poids=1.0)
+    question_forte = Question(pilier=Pilier.ENVIRONNEMENT, libelle="Q2", poids=3.0)
+    db.add_all([question_faible, question_forte])
+    db.flush()
+    db.add(Reponse(questionnaire_id=questionnaire.id, question_id=question_faible.id, valeur=0))
+    db.add(Reponse(questionnaire_id=questionnaire.id, question_id=question_forte.id, valeur=4))
+    db.commit()
+
+    scores = calculer_scores(db, questionnaire.id)
+
+    score_env = next(s for s in scores if s.pilier is Pilier.ENVIRONNEMENT)
+    # (0*1 + 4*3) / ((1+3)*4) * 100 = 75 -- une simple moyenne non ponderee donnerait 50
+    assert score_env.valeur == pytest.approx(75.0)
+
+
+def test_score_global_ignore_les_piliers_sans_reponse(db):
+    questionnaire_id = _setup_questionnaire(
+        db,
+        {
+            Pilier.ENVIRONNEMENT: [4, 4],  # 100
+            Pilier.SOCIAL: [0, 0],  # 0
+        },
+    )
+
+    scores = calculer_scores(db, questionnaire_id)
+
+    score_global = next(s for s in scores if s.pilier is None)
+    # moyenne sur les 2 piliers repondus, pas /3 : (100 + 0) / 2 = 50
+    assert score_global.valeur == pytest.approx(50.0)
