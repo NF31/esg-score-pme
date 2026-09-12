@@ -1,11 +1,12 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.database import engine, get_db
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
+from app.rapport import generer_rapport_pdf
 from app.schemas import (
     EntrepriseCreate,
     EntrepriseOut,
@@ -95,3 +96,18 @@ def calculer_score_questionnaire(questionnaire_id: int, db: Session = Depends(ge
         return calculer_scores(db, questionnaire_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/questionnaires/{questionnaire_id}/rapport")
+def telecharger_rapport(questionnaire_id: int, db: Session = Depends(get_db)):
+    try:
+        pdf_bytes = generer_rapport_pdf(db, questionnaire_id)
+    except ValueError as exc:
+        status_code = 404 if "introuvable" in str(exc) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=rapport-esg-{questionnaire_id}.pdf"},
+    )
