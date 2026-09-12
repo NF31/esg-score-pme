@@ -50,7 +50,8 @@ def test_questions_are_seeded_across_the_three_piliers():
 
 def test_full_flow_entreprise_questionnaire_reponse():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
 
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
@@ -67,7 +68,8 @@ def test_full_flow_entreprise_questionnaire_reponse():
 
 def test_reponse_valeur_hors_echelle_est_rejetee():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
     question_id = client.get("/questions").json()[0]["id"]
@@ -86,7 +88,8 @@ def test_questionnaire_sur_entreprise_inexistante_est_rejete():
 
 def test_calculer_score_via_api():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
 
@@ -105,7 +108,8 @@ def test_calculer_score_via_api():
 
 def test_calculer_score_sans_reponse_renvoie_400():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
 
@@ -115,7 +119,8 @@ def test_calculer_score_sans_reponse_renvoie_400():
 
 def test_telecharger_rapport_via_api():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
     for question in client.get("/questions").json():
@@ -133,7 +138,8 @@ def test_telecharger_rapport_via_api():
 
 def test_telecharger_rapport_sans_score_renvoie_400():
     entreprise = client.post(
-        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+        "/entreprises",
+        json={"nom": "Acme SARL", "secteur": "Industrie manufacturiere", "effectif": 42},
     ).json()
     questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
 
