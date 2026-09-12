@@ -9,7 +9,7 @@ def test_schema_creates_and_relationships_work():
     Base.metadata.create_all(engine)
 
     with Session(engine) as session:
-        entreprise = Entreprise(nom="Acme SARL", secteur="Industrie", effectif=42)
+        entreprise = Entreprise(nom="Acme SARL", secteur="Industrie manufacturiere", effectif=42)
         question = Question(pilier=Pilier.ENVIRONNEMENT, libelle="Mesure son empreinte carbone ?")
         session.add_all([entreprise, question])
         session.flush()

@@ -1,9 +1,6 @@
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from app.models import (
-    Base,
     Entreprise,
     Pilier,
     Question,
@@ -12,38 +9,11 @@ from app.models import (
     StatutQuestionnaire,
 )
 from app.scoring import calculer_scores
-
-
-@pytest.fixture
-def db():
-    engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
-    with Session(engine) as session:
-        yield session
-
-
-def _setup_questionnaire(db, reponses_par_pilier):
-    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie", effectif=42)
-    db.add(entreprise)
-    db.flush()
-    questionnaire = Questionnaire(entreprise_id=entreprise.id)
-    db.add(questionnaire)
-    db.flush()
-
-    for pilier, valeurs in reponses_par_pilier.items():
-        for valeur in valeurs:
-            question = Question(pilier=pilier, libelle="Q", poids=1.0)
-            db.add(question)
-            db.flush()
-            db.add(
-                Reponse(questionnaire_id=questionnaire.id, question_id=question.id, valeur=valeur)
-            )
-    db.commit()
-    return questionnaire.id
+from tests.helpers import creer_questionnaire
 
 
 def test_score_pilier_maximal_donne_cent(db):
-    questionnaire_id = _setup_questionnaire(db, {Pilier.ENVIRONNEMENT: [4, 4]})
+    questionnaire_id = creer_questionnaire(db, {Pilier.ENVIRONNEMENT: [4, 4]})
 
     scores = calculer_scores(db, questionnaire_id)
 
@@ -52,7 +22,7 @@ def test_score_pilier_maximal_donne_cent(db):
 
 
 def test_score_global_est_moyenne_egale_des_piliers(db):
-    questionnaire_id = _setup_questionnaire(
+    questionnaire_id = creer_questionnaire(
         db,
         {
             Pilier.ENVIRONNEMENT: [4, 4],  # 100
@@ -68,7 +38,7 @@ def test_score_global_est_moyenne_egale_des_piliers(db):
 
 
 def test_calculer_scores_marque_le_questionnaire_termine(db):
-    questionnaire_id = _setup_questionnaire(db, {Pilier.SOCIAL: [3]})
+    questionnaire_id = creer_questionnaire(db, {Pilier.SOCIAL: [3]})
 
     calculer_scores(db, questionnaire_id)
 
@@ -77,7 +47,7 @@ def test_calculer_scores_marque_le_questionnaire_termine(db):
 
 
 def test_calculer_scores_est_idempotent(db):
-    questionnaire_id = _setup_questionnaire(db, {Pilier.SOCIAL: [2]})
+    questionnaire_id = creer_questionnaire(db, {Pilier.SOCIAL: [2]})
 
     calculer_scores(db, questionnaire_id)
     scores_apres_deuxieme_appel = calculer_scores(db, questionnaire_id)
@@ -87,7 +57,7 @@ def test_calculer_scores_est_idempotent(db):
 
 
 def test_calculer_scores_sans_reponse_leve_une_erreur(db):
-    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie", effectif=42)
+    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie manufacturiere", effectif=42)
     db.add(entreprise)
     db.flush()
     questionnaire = Questionnaire(entreprise_id=entreprise.id)
@@ -104,7 +74,7 @@ def test_calculer_scores_questionnaire_introuvable_leve_une_erreur(db):
 
 
 def test_score_pilier_minimal_donne_zero(db):
-    questionnaire_id = _setup_questionnaire(db, {Pilier.GOUVERNANCE: [0, 0]})
+    questionnaire_id = creer_questionnaire(db, {Pilier.GOUVERNANCE: [0, 0]})
 
     scores = calculer_scores(db, questionnaire_id)
 
@@ -113,7 +83,7 @@ def test_score_pilier_minimal_donne_zero(db):
 
 
 def test_score_pilier_pondere_par_le_poids_des_questions(db):
-    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie", effectif=42)
+    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie manufacturiere", effectif=42)
     db.add(entreprise)
     db.flush()
     questionnaire = Questionnaire(entreprise_id=entreprise.id)
@@ -136,7 +106,7 @@ def test_score_pilier_pondere_par_le_poids_des_questions(db):
 
 
 def test_score_global_ignore_les_piliers_sans_reponse(db):
-    questionnaire_id = _setup_questionnaire(
+    questionnaire_id = creer_questionnaire(
         db,
         {
             Pilier.ENVIRONNEMENT: [4, 4],  # 100
