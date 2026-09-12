@@ -8,7 +8,7 @@
 | F01 | Modèle de données (entreprise, questionnaire, scores) | 🟢 | `app/models.py` (SQLAlchemy 2.0), Entreprise/Question/Questionnaire/Reponse/Score, 2026-09-12 |
 | F02 | Questionnaire ESG structuré (formulaire) | 🟢 | 24 questions (8/pilier), `app/seed.py` + endpoints `/questions`, `/entreprises`, `/questionnaires`, 2026-09-12 |
 | F03 | Moteur de scoring (calcul du score global + par pilier) | 🟢 | `app/scoring.py` + endpoint `/calculer-score`, formule dans `docs/SCORING.md`, 2026-09-12 |
-| F04 | Génération d'un rapport de synthèse (PDF ou page web) | 🔴 | |
+| F04 | Génération d'un rapport de synthèse (PDF ou page web) | 🟢 | PDF via `app/rapport.py` (reportlab), endpoint `/rapport`, 2026-09-12 |
 | F05 | API backend (FastAPI) exposant les endpoints | 🟢 | Squelette + /health, 2026-09-11 |
 | F06 | Interface utilisateur simple (Streamlit) | 🔴 | Saisie questionnaire + affichage résultat |
 | F07 | Persistance en base (PostgreSQL) | 🔴 | Historisation des réponses |

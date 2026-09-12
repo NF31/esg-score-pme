@@ -8,6 +8,7 @@
 | `pytest` | Tests | Standard Python, utilisé sur Atlas |
 | `ruff` | Lint + format | Un seul outil pour les deux, utilisé sur Atlas |
 | `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores — schéma défini dans `app/models.py`, pas encore branché sur une vraie base (cf. F07) |
+| `reportlab` | F04 | Génération du rapport de synthèse en PDF (`app/rapport.py`) |
 
 ## À ajouter — Phase 1 (MVP diagnostic)
 
@@ -15,7 +16,6 @@
 |---|---|---|
 | `psycopg[binary]` | F07 | Driver PostgreSQL |
 | `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) |
-| `pandas` | F03 | Agrégation des réponses pour le calcul du score |
 | `pydantic-settings` | — | Gestion propre des variables d'environnement (`.env`) |
 | `streamlit` | F06 | Frontend simple, adapté à un outil data/diagnostic — voir justification stack précédente (pas de React) |
 
@@ -24,8 +24,13 @@
 | Lib | Feature liée | Pourquoi |
 |---|---|---|
 | `httpx` | F10 | Requêtes vers des sources de données publiques |
-| `reportlab` | F04 | Génération du rapport de synthèse en PDF |
 | `anthropic` | F14 | Extraction de données depuis des rapports RSE (PDF) via LLM |
+
+## Note : `pandas` écarté pour F03
+
+Le moteur de scoring (F03) a finalement été écrit en Python pur (agrégations simples sur
+des listes), sans avoir besoin de `pandas` — évite une dépendance lourde non justifiée
+pour un calcul qui ne le nécessitait pas.
 
 ## Décision : SQLite en dev le temps de F07
 
