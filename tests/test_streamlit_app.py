@@ -17,7 +17,7 @@ def test_creer_entreprise_affiche_le_questionnaire():
     at.run()
 
     at.text_input[0].input("Ma PME").run()
-    at.text_input[1].input("Tech").run()
+    at.selectbox[0].select("Information et communication").run()
     at.number_input[0].set_value(15).run()
     at.button[0].click().run()
 
