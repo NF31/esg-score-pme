@@ -25,6 +25,7 @@ Gestion des dépendances via `uv`. Détail et justification de chaque choix dans
 uv sync                        # installer les dépendances
 uv run fastapi dev main.py     # lancer l'API en dev (reload auto), doc sur /docs
 uv run fastapi run main.py     # lancer en mode production
+uv run streamlit run streamlit_app.py  # interface utilisateur (http://127.0.0.1:8501)
 
 uv run ruff check .            # lint
 uv run ruff format --check .   # format check

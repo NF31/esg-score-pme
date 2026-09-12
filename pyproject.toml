@@ -8,6 +8,7 @@ dependencies = [
     "fastapi[standard]>=0.111",
     "reportlab>=5.0.1",
     "sqlalchemy>=2.0.52",
+    "streamlit>=1.63.0",
 ]
 
 [dependency-groups]
