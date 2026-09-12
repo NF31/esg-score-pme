@@ -2,6 +2,8 @@
 
 Outil de diagnostic et scoring ESG/RSE pensé pour les PME, dans le cadre de la double licence Numérique et Management (Toulouse Capitole / TSM).
 
+Démo en ligne : https://streamlit-production-6f3b.up.railway.app
+
 ## Problématique
 
 Face à la simplification réglementaire européenne (Omnibus/CSRD) et à l'instabilité économique mondiale, dans quelle mesure un outil numérique accessible peut-il permettre aux PME de transformer le reporting extra-financier d'une contrainte administrative en un véritable levier de compétitivité et d'accès au financement ?

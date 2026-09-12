@@ -50,6 +50,24 @@ avec une analyse pilotée par token depuis la CI (erreur "project not found" cô
 l'Automatic Analysis — zéro maintenance, déjà fonctionnelle — plutôt que de désactiver ce mode pour
 répliquer le pattern CI-based de kbeauty-shop.
 
+## Décision : déploiement Railway, un seul service (Streamlit) + Postgres (F08)
+
+Compte Railway personnel (projet `esg-score-pme`), pattern bootstrap habituel : dev sur compte
+perso, transfert au client/à l'école si besoin plus tard. Le plan gratuit limite le nombre de
+services provisionnables ; avec Postgres + un service applicatif la limite est atteinte, donc pas
+de 2e service pour exposer l'API FastAPI séparément. Ce n'est pas un problème fonctionnel :
+`streamlit_app.py` appelle déjà directement les fonctions `app/` (cf. décision F06 ci-dessus), donc
+Streamlit seul suffit à livrer le produit complet (formulaire → score → rapport PDF) sans dépendre
+d'un service API en ligne. Config Railway :
+- service `streamlit`, connecté au repo GitHub (`main`), auto-deploy sur push
+- `preDeployCommand: uv run alembic upgrade head` — migre le schéma avant chaque redémarrage
+- `startCommand: uv run streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0`
+- `DATABASE_URL` référence le service Postgres du même projet (`postgresql+psycopg://...`)
+- config faite via `railway` CLI/API (pas de `railway.json` versionné — cf. décision Atlas similaire)
+
+Si l'API doit un jour être exposée séparément (F10+, intégrations externes), upgrade vers le plan
+Hobby ($5/mois) ou remplacement du service unique par un process manager lançant les deux apps.
+
 ## Principe
 
 On n'ajoute une dépendance que quand la feature qui en a besoin est attaquée — pas de lib installée "au cas où". Chaque ajout doit être justifiable en une phrase face à un jury.
