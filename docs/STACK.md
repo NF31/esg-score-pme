@@ -7,17 +7,12 @@
 | `fastapi[standard]` | Backend API | Typage natif, doc Swagger auto-générée, rapide à écrire seul — voir README pour la comparaison vs Django/Flask |
 | `pytest` | Tests | Standard Python, utilisé sur Atlas |
 | `ruff` | Lint + format | Un seul outil pour les deux, utilisé sur Atlas |
-| `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores — schéma défini dans `app/models.py`, pas encore branché sur une vraie base (cf. F07) |
+| `sqlalchemy` | F01 | ORM pour modéliser entreprise/questionnaire/scores — schéma défini dans `app/models.py` |
 | `reportlab` | F04 | Génération du rapport de synthèse en PDF (`app/rapport.py`) |
 | `streamlit` | F06 | Frontend simple (`streamlit_app.py`), appelle directement les fonctions `app/` (pas de client HTTP) — cohérent avec le monolithe modulaire, pas de duplication de logique avec l'API FastAPI |
-
-## À ajouter — Phase 1 (MVP diagnostic)
-
-| Lib | Feature liée | Pourquoi |
-|---|---|---|
 | `psycopg[binary]` | F07 | Driver PostgreSQL |
-| `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) |
-| `pydantic-settings` | — | Gestion propre des variables d'environnement (`.env`) |
+| `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) — `alembic/` |
+| `pydantic-settings` | F07 | Gestion propre des variables d'environnement (`app/config.py`, `.env`) |
 
 ## À ajouter plus tard — Phase 2/3 (au moment de la feature, pas avant)
 
@@ -32,12 +27,20 @@ Le moteur de scoring (F03) a finalement été écrit en Python pur (agrégations
 des listes), sans avoir besoin de `pandas` — évite une dépendance lourde non justifiée
 pour un calcul qui ne le nécessitait pas.
 
-## Décision : SQLite en dev le temps de F07
+## Décision : SQLite en local, PostgreSQL en dev partagé/prod (F07)
 
-`app/database.py` branche SQLAlchemy sur `sqlite:///./esg.db` par défaut (variable
-`DATABASE_URL`), pour que les endpoints de F02 (entreprises/questionnaires/réponses)
-soient fonctionnels sans attendre F07. Le passage à PostgreSQL (F07) ne changera que
-la valeur de `DATABASE_URL` — aucun code applicatif à modifier.
+`app/database.py` lit `DATABASE_URL` via `app/config.py` (pydantic-settings), avec
+`sqlite:///./esg.db` comme défaut local. En pointant cette variable vers une instance
+PostgreSQL, aucun code applicatif ne change — seul le schéma est alors géré par les
+migrations Alembic (`alembic upgrade head`) plutôt que par `Base.metadata.create_all`,
+qui reste actif uniquement quand `DATABASE_URL` est du SQLite (dev rapide sans
+migration). Commandes utiles :
+
+```bash
+uv run alembic revision --autogenerate -m "description"  # après modif de app/models.py
+uv run alembic upgrade head                               # appliquer les migrations
+uv run alembic downgrade -1                                # revenir en arrière d'une révision
+```
 
 ## Décision : SonarCloud en Automatic Analysis, pas en CI
 

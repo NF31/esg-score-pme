@@ -11,7 +11,7 @@
 | F04 | Génération d'un rapport de synthèse (PDF ou page web) | 🟢 | PDF via `app/rapport.py` (reportlab), endpoint `/rapport`, 2026-09-12 |
 | F05 | API backend (FastAPI) exposant les endpoints | 🟢 | Squelette + /health, 2026-09-11 |
 | F06 | Interface utilisateur simple (Streamlit) | 🟢 | `streamlit_app.py`, formulaire entreprise + questionnaire + score + PDF, 2026-09-12 |
-| F07 | Persistance en base (PostgreSQL) | 🔴 | Historisation des réponses |
+| F07 | Persistance en base (PostgreSQL) | 🟢 | `app/config.py` (pydantic-settings) + migrations Alembic (`alembic/`), `DATABASE_URL` bascule SQLite ↔ PostgreSQL sans changement de code, 2026-09-12 |
 | F08 | Déploiement (Railway/Render) | 🔴 | |
 | F09 | Tests unitaires sur le moteur de scoring | 🔴 | Priorité : la logique métier doit être fiable — squelette `test_health.py` en place |
 | F09b | Lint/format (ruff check + ruff format) | 🟢 | Config dans `pyproject.toml`, même règles que Atlas, 2026-09-11 |

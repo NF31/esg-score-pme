@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Response
 from sqlalchemy.orm import Session
 
-from app.database import engine, get_db
+from app.database import DATABASE_URL, engine, get_db
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.schemas import (
@@ -23,7 +23,10 @@ from app.seed import seed_questions
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    Base.metadata.create_all(engine)
+    # En PostgreSQL le schéma est géré par Alembic (`alembic upgrade head`) ;
+    # create_all reste utile en SQLite pour le dev rapide sans migration.
+    if DATABASE_URL.startswith("sqlite"):
+        Base.metadata.create_all(engine)
     with Session(engine) as db:
         seed_questions(db)
     yield
