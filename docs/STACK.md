@@ -27,6 +27,13 @@
 | `reportlab` | F04 | Génération du rapport de synthèse en PDF |
 | `anthropic` | F14 | Extraction de données depuis des rapports RSE (PDF) via LLM |
 
+## Décision : SQLite en dev le temps de F07
+
+`app/database.py` branche SQLAlchemy sur `sqlite:///./esg.db` par défaut (variable
+`DATABASE_URL`), pour que les endpoints de F02 (entreprises/questionnaires/réponses)
+soient fonctionnels sans attendre F07. Le passage à PostgreSQL (F07) ne changera que
+la valeur de `DATABASE_URL` — aucun code applicatif à modifier.
+
 ## Décision : SonarCloud en Automatic Analysis, pas en CI
 
 Le job SonarQube dans `.github/workflows/ci.yml` a été retiré : lors de l'import du projet sur
