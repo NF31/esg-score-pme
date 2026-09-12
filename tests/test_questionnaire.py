@@ -82,3 +82,32 @@ def test_reponse_valeur_hors_echelle_est_rejetee():
 def test_questionnaire_sur_entreprise_inexistante_est_rejete():
     response = client.post("/questionnaires", json={"entreprise_id": 999})
     assert response.status_code == 404
+
+
+def test_calculer_score_via_api():
+    entreprise = client.post(
+        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+    ).json()
+    questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
+
+    for question in client.get("/questions").json():
+        client.post(
+            f"/questionnaires/{questionnaire['id']}/reponses",
+            json={"question_id": question["id"], "valeur": 4},
+        )
+
+    response = client.post(f"/questionnaires/{questionnaire['id']}/calculer-score")
+    assert response.status_code == 200
+    scores = response.json()
+    assert len(scores) == 4  # 3 piliers + score global
+    assert all(s["valeur"] == 100.0 for s in scores)
+
+
+def test_calculer_score_sans_reponse_renvoie_400():
+    entreprise = client.post(
+        "/entreprises", json={"nom": "Acme SARL", "secteur": "Industrie", "effectif": 42}
+    ).json()
+    questionnaire = client.post("/questionnaires", json={"entreprise_id": entreprise["id"]}).json()
+
+    response = client.post(f"/questionnaires/{questionnaire['id']}/calculer-score")
+    assert response.status_code == 400
