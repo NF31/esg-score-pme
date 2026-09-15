@@ -46,3 +46,18 @@ réel n'est fait en leur nom. Condition nécessaire pour que le secteur soit un 
 regroupement fiable : la saisie d'entreprise (formulaire et API) est contrainte à la même
 nomenclature de secteurs que l'import F10 (`app/secteurs.py`, 21 sections NAF), plutôt
 qu'un champ texte libre.
+
+## Recommandations priorisées (F12)
+
+`/questionnaires/{id}/recommandations` renvoie jusqu'à 5 questions à traiter en priorité,
+triées par **gain potentiel** décroissant :
+
+```
+gain_potentiel = (4 - valeur_reponse) * poids_question
+```
+
+**Choix assumé** : trier par gain potentiel plutôt que par valeur de réponse brute. Une
+question à poids 3.0 répondue 1/4 (gain 9) a plus d'impact sur le score qu'une question à
+poids 1.0 répondue 0/4 (gain 1), même si sa réponse est moins mauvaise en apparence — c'est
+elle le vrai "quick win". Les réponses déjà maximales (4/4) sont exclues, aucun gain
+possible. Règle simple et explicable, pas de modèle ni d'IA nécessaire pour cette feature.
