@@ -25,7 +25,7 @@
 |---|---|---|---|
 | F10 | Import de données publiques (entreprises CAC40/PME labellisées) | 🟢 | `app/import_entreprises.py` via l'API gouv.fr recherche-entreprises (nom/secteur/effectif réels, pas de score ESG inventé — cf. `docs/STACK.md`), 2026-09-12 |
 | F11 | Comparaison sectorielle (score vs moyenne secteur) | 🟢 | `app/benchmark.py` + endpoint `/comparaison-sectorielle`, moyenne des diagnostics réellement complétés dans le même secteur (pas de score inventé), 2026-09-12 |
-| F12 | Recommandations priorisées (quick wins) | 🔴 | Règles simples au départ, pas besoin d'IA |
+| F12 | Recommandations priorisées (quick wins) | 🟢 | `app/recommandations.py` + endpoint `/recommandations`, règles simples (gain potentiel = poids × marge de progression), pas d'IA, 2026-09-15 |
 | F13 | Historique / évolution du score dans le temps | 🔴 | Graphe simple |
 
 ## Phase 3 — Différenciant

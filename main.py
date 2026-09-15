@@ -8,6 +8,7 @@ from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
+from app.recommandations import generer_recommandations
 from app.schemas import (
     ComparaisonSecteurOut,
     EntrepriseCreate,
@@ -15,6 +16,7 @@ from app.schemas import (
     QuestionnaireCreate,
     QuestionnaireOut,
     QuestionOut,
+    RecommandationOut,
     ReponseIn,
     ReponseOut,
     ScoreOut,
@@ -114,6 +116,18 @@ def comparaison_sectorielle(questionnaire_id: int, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
     return [{"pilier": pilier, **donnees} for pilier, donnees in comparaison.items()]
+
+
+@app.get(
+    "/questionnaires/{questionnaire_id}/recommandations",
+    response_model=list[RecommandationOut],
+)
+def recommandations(questionnaire_id: int, db: Session = Depends(get_db)):
+    try:
+        return generer_recommandations(db, questionnaire_id)
+    except ValueError as exc:
+        status_code = 404 if "introuvable" in str(exc) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
 
 
 @app.get("/questionnaires/{questionnaire_id}/rapport")
