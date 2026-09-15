@@ -68,3 +68,13 @@ class ComparaisonSecteurOut(BaseModel):
     pilier: Pilier | None  # None = score global
     moyenne: float
     nb_entreprises: int
+
+
+class RecommandationOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    question_id: int
+    pilier: Pilier
+    libelle: str
+    valeur_actuelle: int
+    gain_potentiel: float

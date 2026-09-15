@@ -7,6 +7,7 @@ from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
+from app.recommandations import generer_recommandations
 from app.scoring import calculer_scores
 from app.secteurs import SECTEURS
 from app.seed import seed_questions
@@ -122,6 +123,17 @@ else:
                 f"Comparaison basee sur {info_globale['nb_entreprises']} "
                 "diagnostic(s) complete(s) dans le meme secteur."
             )
+
+        with Session(engine) as db:
+            recommandations = generer_recommandations(db, st.session_state.questionnaire_id)
+        if recommandations:
+            st.subheader("🎯 Recommandations prioritaires")
+            st.caption("Quick wins : les reponses avec le plus fort potentiel de gain de score.")
+            for reco in recommandations:
+                st.markdown(
+                    f"- **{LIBELLE_PILIER[reco.pilier]}** — {reco.libelle} "
+                    f"(actuellement {reco.valeur_actuelle}/4)"
+                )
 
         with Session(engine) as db:
             pdf_bytes = generer_rapport_pdf(db, st.session_state.questionnaire_id)
