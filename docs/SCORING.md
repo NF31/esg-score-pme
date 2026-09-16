@@ -61,3 +61,16 @@ question à poids 3.0 répondue 1/4 (gain 9) a plus d'impact sur le score qu'une
 poids 1.0 répondue 0/4 (gain 1), même si sa réponse est moins mauvaise en apparence — c'est
 elle le vrai "quick win". Les réponses déjà maximales (4/4) sont exclues, aucun gain
 possible. Règle simple et explicable, pas de modèle ni d'IA nécessaire pour cette feature.
+
+## Historique des scores (F13)
+
+`/entreprises/{id}/historique-scores` renvoie, pour une entreprise donnée, tous les scores
+(global et par pilier) de ses questionnaires **`TERMINE`**, triés par date de création du
+questionnaire croissante. Un questionnaire `EN_COURS` ne produit aucun point : seuls les
+scores réellement calculés (via `/calculer-score`) apparaissent dans l'historique.
+
+**Choix assumé** : l'historique se lit au niveau de l'entreprise, pas du questionnaire — une
+entreprise qui refait un diagnostic plus tard crée un nouveau `Questionnaire` rattaché à la
+même entreprise plutôt que de modifier l'ancien, ce qui préserve chaque point de mesure passé.
+Dans l'interface Streamlit, "Refaire un diagnostic (meme entreprise)" permet d'enchaîner un
+nouveau questionnaire sur la même entreprise pour illustrer cette évolution.

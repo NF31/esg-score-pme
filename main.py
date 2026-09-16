@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
+from app.historique import historique_scores
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.recommandations import generer_recommandations
@@ -13,6 +14,7 @@ from app.schemas import (
     ComparaisonSecteurOut,
     EntrepriseCreate,
     EntrepriseOut,
+    HistoriquePointOut,
     QuestionnaireCreate,
     QuestionnaireOut,
     QuestionOut,
@@ -128,6 +130,24 @@ def recommandations(questionnaire_id: int, db: Session = Depends(get_db)):
     except ValueError as exc:
         status_code = 404 if "introuvable" in str(exc) else 400
         raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+
+@app.get("/entreprises/{entreprise_id}/historique-scores", response_model=list[HistoriquePointOut])
+def historique_scores_entreprise(entreprise_id: int, db: Session = Depends(get_db)):
+    try:
+        scores = historique_scores(db, entreprise_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+    return [
+        {
+            "questionnaire_id": score.questionnaire_id,
+            "date": score.questionnaire.created_at,
+            "pilier": score.pilier,
+            "valeur": score.valeur,
+        }
+        for score in scores
+    ]
 
 
 @app.get("/questionnaires/{questionnaire_id}/rapport")
