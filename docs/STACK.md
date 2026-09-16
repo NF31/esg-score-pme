@@ -115,6 +115,26 @@ alors que comparer deux valeurs numeriques deja disponibles est une regle simple
 et testable sans API. Limite assumee : la detection ne fonctionne que si l'utilisateur a utilise
 l'extraction PDF (F14) sur ce questionnaire ; sans elle, aucune donnee de comparaison n'existe.
 
+## Décision : alignement ESRS simplifié, pas de conformité CSRD complète (F16)
+
+`app/esrs.py` classe chacune des 24 questions sous un standard ESRS reel (ESRS E1 Changement
+climatique, E3 Eau, E5 Ressources et economie circulaire, S1 Effectifs, S2 Travailleurs de la
+chaine de valeur, S3 Communautes affectees, S4 Consommateurs, G1 Conduite des affaires, ESRS 2
+Informations generales) plutot que les 3 piliers generiques E/S/G utilises ailleurs dans l'app.
+`app/export_esrs.py` regroupe le PDF selon cette structure.
+
+**Limites assumees** : ce n'est pas un export CSRD conforme -- pas d'analyse de double
+materialite (obligatoire dans un vrai rapport CSRD), pas de balisage XBRL, et la correspondance
+question -> standard est une simplification pedagogique (une seule question par sujet, alors
+qu'un standard ESRS reel comporte des dizaines de datapoints). L'objectif est de montrer que le
+diagnostic peut se lire dans la structure du referentiel officiel, pas de produire un document
+deposable aupres d'un regulateur. E2 (Pollution) et E4 (Biodiversite) ne sont pas couverts,
+peu pertinents sans activite industrielle ou impact ecosystemique specifique pour une PME type.
+
+Migration Alembic (`212d6cf5a6ac`) : colonne ajoutee nullable, backfillee par correspondance de
+libelle exact pour les questions deja seedees en base, puis passee `NOT NULL` -- pattern standard
+pour ajouter une colonne obligatoire sans casser les donnees existantes en prod.
+
 ## Principe
 
 On n'ajoute une dépendance que quand la feature qui en a besoin est attaquée — pas de lib installée "au cas où". Chaque ajout doit être justifiable en une phrase face à un jury.

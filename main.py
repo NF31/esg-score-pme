@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
+from app.export_esrs import generer_export_esrs
 from app.extraction_pdf import extraire_reponses
 from app.greenwashing import detecter_ecarts
 from app.historique import historique_scores
@@ -199,4 +200,19 @@ def telecharger_rapport(questionnaire_id: int, db: Session = Depends(get_db)):
         content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=rapport-esg-{questionnaire_id}.pdf"},
+    )
+
+
+@app.get("/questionnaires/{questionnaire_id}/rapport-esrs")
+def telecharger_rapport_esrs(questionnaire_id: int, db: Session = Depends(get_db)):
+    try:
+        pdf_bytes = generer_export_esrs(db, questionnaire_id)
+    except ValueError as exc:
+        status_code = 404 if "introuvable" in str(exc) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=export-esrs-{questionnaire_id}.pdf"},
     )

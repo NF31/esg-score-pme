@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
+from app.export_esrs import generer_export_esrs
 from app.extraction_pdf import extraire_reponses
 from app.greenwashing import detecter_ecarts
 from app.historique import historique_scores
@@ -193,12 +194,21 @@ else:
                     f"(actuellement {reco.valeur_actuelle}/4)"
                 )
 
+        colonne_rapport, colonne_esrs = st.columns(2)
         with Session(engine) as db:
             pdf_bytes = generer_rapport_pdf(db, st.session_state.questionnaire_id)
-        st.download_button(
+        colonne_rapport.download_button(
             "Telecharger le rapport PDF",
             data=pdf_bytes,
             file_name="rapport-esg.pdf",
+            mime="application/pdf",
+        )
+        with Session(engine) as db:
+            pdf_esrs_bytes = generer_export_esrs(db, st.session_state.questionnaire_id)
+        colonne_esrs.download_button(
+            "Telecharger l'export ESRS",
+            data=pdf_esrs_bytes,
+            file_name="export-esrs.pdf",
             mime="application/pdf",
         )
 
