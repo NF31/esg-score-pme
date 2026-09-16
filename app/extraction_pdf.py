@@ -15,6 +15,7 @@ from app.config import settings
 from app.models import Question
 
 MODELE = "claude-sonnet-5"
+TAILLE_MAX_PDF_OCTETS = 10 * 1024 * 1024  # 10 Mo -- cf. .streamlit/config.toml
 
 OUTIL_ENREGISTRER_REPONSES = {
     "name": "enregistrer_reponses_extraites",
@@ -62,6 +63,8 @@ def extraire_reponses(db: Session, pdf_bytes: bytes) -> list[dict]:
         raise ValueError("Cle ANTHROPIC_API_KEY non configuree")
     if not pdf_bytes:
         raise ValueError("Fichier PDF vide")
+    if len(pdf_bytes) > TAILLE_MAX_PDF_OCTETS:
+        raise ValueError("Fichier PDF trop volumineux (limite 10 Mo)")
 
     questions = db.query(Question).order_by(Question.pilier, Question.id).all()
     if not questions:
