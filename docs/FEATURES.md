@@ -34,7 +34,7 @@
 |---|---|---|---|
 | F14 | Extraction automatique de données depuis un rapport RSE (PDF) via LLM | 🟢 | `app/extraction_pdf.py` (Claude, document PDF natif + tool use force) + endpoint `/questionnaires/{id}/extraire-pdf`, pre-remplit les sliders Streamlit (editable, rien n'est ecrit en base automatiquement), 2026-09-16 |
 | F15 | Détection de greenwashing (écart discours/données chiffrées) | 🟢 | `app/greenwashing.py` + endpoint `/questionnaires/{id}/detecter-greenwashing`, compare la suggestion IA (F14) a la reponse validee par l'utilisateur, aucun nouvel appel LLM, 2026-09-16 |
-| F16 | Export rapport aligné format ESRS officiel | 🔴 | Renforce la crédibilité réglementaire |
+| F16 | Export rapport aligné format ESRS officiel | 🟢 | `app/esrs.py` (referentiel simplifie) + `app/export_esrs.py`, endpoint `/questionnaires/{id}/rapport-esrs`, PDF regroupe par standard ESRS (E1/E3/E5/S1-S4/G1/ESRS 2) plutot que par les 3 piliers, 2026-09-16 |
 
 ## Hors périmètre (assumé)
 - Pas de vrai partenariat entreprise (étude sur données publiques)
