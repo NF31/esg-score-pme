@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
 from app.extraction_pdf import extraire_reponses
+from app.greenwashing import detecter_ecarts
 from app.historique import historique_scores
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
@@ -16,6 +17,7 @@ from app.schemas import (
     EntrepriseCreate,
     EntrepriseOut,
     ExtractionReponseOut,
+    GreenwashingEcartOut,
     HistoriquePointOut,
     QuestionnaireCreate,
     QuestionnaireOut,
@@ -149,6 +151,22 @@ async def extraire_pdf(questionnaire_id: int, fichier: UploadFile, db: Session =
         return extraire_reponses(db, await fichier.read())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post(
+    "/questionnaires/{questionnaire_id}/detecter-greenwashing",
+    response_model=list[GreenwashingEcartOut],
+)
+def detecter_greenwashing(
+    questionnaire_id: int,
+    suggestions_ia: list[ExtractionReponseOut],
+    db: Session = Depends(get_db),
+):
+    try:
+        return detecter_ecarts(db, questionnaire_id, [s.model_dump() for s in suggestions_ia])
+    except ValueError as exc:
+        status_code = 404 if "introuvable" in str(exc) else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
 
 
 @app.get("/entreprises/{entreprise_id}/historique-scores", response_model=list[HistoriquePointOut])
