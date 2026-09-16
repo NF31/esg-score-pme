@@ -104,6 +104,12 @@ l'IA n'a pas vocation a se substituer entierement au diagnostic humain. Cle `ANT
 lue via `app/config.py` (`.env`, jamais committee) ; en son absence l'extraction leve une
 erreur explicite plutot que d'echouer silencieusement, le reste de l'app fonctionne sans elle.
 
+**Limite de taille (10 Mo)** : l'app etant publique et sans authentification, un upload PDF non
+borne exposerait a un abus de cout sur l'API Anthropic (payante) -- limite appliquee a deux
+niveaux, `maxUploadSize` dans `.streamlit/config.toml` (rejet cote serveur avant lecture
+complete) et une verification dans `extraire_reponses()` (defense en profondeur, couvre aussi
+l'endpoint FastAPI `/questionnaires/{id}/extraire-pdf`).
+
 ## Décision : greenwashing par comparaison, pas par nouvel appel LLM (F15)
 
 `app/greenwashing.py` ne fait aucun appel a l'API Anthropic : il compare les suggestions deja
