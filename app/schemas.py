@@ -79,6 +79,12 @@ class HistoriquePointOut(BaseModel):
     valeur: float
 
 
+class ExtractionReponseOut(BaseModel):
+    question_id: int
+    valeur: int = Field(ge=0, le=4)
+    justification: str
+
+
 class RecommandationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

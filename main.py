@@ -1,11 +1,12 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, HTTPException, Response, UploadFile
 from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine, get_db
+from app.extraction_pdf import extraire_reponses
 from app.historique import historique_scores
 from app.models import Base, Entreprise, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
@@ -14,6 +15,7 @@ from app.schemas import (
     ComparaisonSecteurOut,
     EntrepriseCreate,
     EntrepriseOut,
+    ExtractionReponseOut,
     HistoriquePointOut,
     QuestionnaireCreate,
     QuestionnaireOut,
@@ -39,6 +41,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="ESG Score PME", lifespan=lifespan)
+
+QUESTIONNAIRE_INTROUVABLE = "Questionnaire introuvable"
 
 
 @app.get("/health")
@@ -80,7 +84,7 @@ def create_questionnaire(payload: QuestionnaireCreate, db: Session = Depends(get
 def submit_reponse(questionnaire_id: int, payload: ReponseIn, db: Session = Depends(get_db)):
     questionnaire = db.get(Questionnaire, questionnaire_id)
     if questionnaire is None:
-        raise HTTPException(status_code=404, detail="Questionnaire introuvable")
+        raise HTTPException(status_code=404, detail=QUESTIONNAIRE_INTROUVABLE)
     question = db.get(Question, payload.question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Question introuvable")
@@ -100,7 +104,7 @@ def submit_reponse(questionnaire_id: int, payload: ReponseIn, db: Session = Depe
 def calculer_score_questionnaire(questionnaire_id: int, db: Session = Depends(get_db)):
     questionnaire = db.get(Questionnaire, questionnaire_id)
     if questionnaire is None:
-        raise HTTPException(status_code=404, detail="Questionnaire introuvable")
+        raise HTTPException(status_code=404, detail=QUESTIONNAIRE_INTROUVABLE)
     try:
         return calculer_scores(db, questionnaire_id)
     except ValueError as exc:
@@ -130,6 +134,21 @@ def recommandations(questionnaire_id: int, db: Session = Depends(get_db)):
     except ValueError as exc:
         status_code = 404 if "introuvable" in str(exc) else 400
         raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+
+@app.post(
+    "/questionnaires/{questionnaire_id}/extraire-pdf",
+    response_model=list[ExtractionReponseOut],
+)
+async def extraire_pdf(questionnaire_id: int, fichier: UploadFile, db: Session = Depends(get_db)):
+    questionnaire = db.get(Questionnaire, questionnaire_id)
+    if questionnaire is None:
+        raise HTTPException(status_code=404, detail=QUESTIONNAIRE_INTROUVABLE)
+
+    try:
+        return extraire_reponses(db, await fichier.read())
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @app.get("/entreprises/{entreprise_id}/historique-scores", response_model=list[HistoriquePointOut])
