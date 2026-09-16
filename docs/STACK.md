@@ -14,18 +14,16 @@
 | `alembic` | F07 | Migrations de schéma versionnées (comme sur Atlas) — `alembic/` |
 | `pydantic-settings` | F07 | Gestion propre des variables d'environnement (`app/config.py`, `.env`) |
 | `httpx` | F10 | Requêtes vers l'API publique recherche-entreprises.api.gouv.fr |
-
-## À ajouter plus tard — Phase 3 (au moment de la feature, pas avant)
-
-| Lib | Feature liée | Pourquoi |
-|---|---|---|
+| `pandas` | F13 | Mise en forme du DataFrame pour le graphe d'évolution du score (`st.line_chart`) |
 | `anthropic` | F14 | Extraction de données depuis des rapports RSE (PDF) via LLM |
 
-## Note : `pandas` écarté pour F03
+## Note : `pandas` écarté pour F03, ajouté pour F13
 
 Le moteur de scoring (F03) a finalement été écrit en Python pur (agrégations simples sur
 des listes), sans avoir besoin de `pandas` — évite une dépendance lourde non justifiée
-pour un calcul qui ne le nécessitait pas.
+pour un calcul qui ne le nécessitait pas. `pandas` a finalement rejoint les dépendances
+directes en F13 : déjà tiré transitivement par `streamlit`, `st.line_chart` en attend un
+DataFrame pour l'historique des scores.
 
 ## Décision : SQLite en local, PostgreSQL en dev partagé/prod (F07)
 
@@ -88,6 +86,23 @@ Lancement manuel (pas au demarrage de l'app, pour ne pas dependre du reseau a ch
 ```bash
 uv run python -m app.import_entreprises
 ```
+
+## Décision : extraction PDF via document natif Claude, pas de parsing texte intermediaire (F14)
+
+`app/extraction_pdf.py` envoie le PDF du rapport RSE directement a l'API Anthropic (bloc
+`document` en base64) plutot que d'extraire le texte au prealable avec une lib type
+`pypdf`/`pdfplumber` : les modeles Claude recents lisent nativement le PDF (mise en page,
+tableaux, graphiques compris), ce qui evite une dependance et une etape de parsing en plus
+pour un gain de fiabilite. La sortie est forcee via *tool use* (`tool_choice` sur
+`enregistrer_reponses_extraites`) plutot que du texte libre a parser, pour garantir un JSON
+valide (question_id, valeur 0-4, justification) sans regex fragile.
+
+**Choix assumé** : l'extraction ne fait que *suggerer* des valeurs qui pre-remplissent les
+sliders Streamlit — rien n'est ecrit en base par `extraire_reponses()`. L'utilisateur garde
+la main pour corriger avant de calculer le score : une valeur ESG reste en partie subjective,
+l'IA n'a pas vocation a se substituer entierement au diagnostic humain. Cle `ANTHROPIC_API_KEY`
+lue via `app/config.py` (`.env`, jamais committee) ; en son absence l'extraction leve une
+erreur explicite plutot que d'echouer silencieusement, le reste de l'app fonctionne sans elle.
 
 ## Principe
 

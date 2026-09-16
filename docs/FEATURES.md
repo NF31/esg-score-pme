@@ -32,7 +32,7 @@
 
 | # | Fonctionnalité | Statut | Notes |
 |---|---|---|---|
-| F14 | Extraction automatique de données depuis un rapport RSE (PDF) via LLM | 🔴 | Angle IA, bonus soutenance |
+| F14 | Extraction automatique de données depuis un rapport RSE (PDF) via LLM | 🟢 | `app/extraction_pdf.py` (Claude, document PDF natif + tool use force) + endpoint `/questionnaires/{id}/extraire-pdf`, pre-remplit les sliders Streamlit (editable, rien n'est ecrit en base automatiquement), 2026-09-16 |
 | F15 | Détection de greenwashing (écart discours/données chiffrées) | 🔴 | Optionnel, fort impact si présenté |
 | F16 | Export rapport aligné format ESRS officiel | 🔴 | Renforce la crédibilité réglementaire |
 

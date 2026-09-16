@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
+from app.extraction_pdf import extraire_reponses
 from app.historique import historique_scores
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
@@ -35,6 +36,7 @@ if "questionnaire_id" not in st.session_state:
     st.session_state.entreprise_id = None
     st.session_state.entreprise_nom = None
     st.session_state.scores = None
+    st.session_state.suggestions_ia = None
 
 if st.session_state.questionnaire_id is None and st.session_state.entreprise_id is not None:
     # Reprise d'un diagnostic pour une entreprise deja existante (cf. bouton "meme entreprise")
@@ -79,12 +81,34 @@ else:
     with Session(engine) as db:
         questions = db.query(Question).order_by(Question.pilier, Question.id).all()
 
+    with st.expander("🤖 Pre-remplir depuis un rapport RSE (PDF) via l'IA"):
+        pdf_upload = st.file_uploader("Rapport RSE au format PDF", type="pdf")
+        if pdf_upload is not None and st.button("Analyser avec l'IA"):
+            with st.spinner("Analyse du rapport en cours..."), Session(engine) as db:
+                try:
+                    reponses_ia = extraire_reponses(db, pdf_upload.getvalue())
+                    st.session_state.suggestions_ia = {r["question_id"]: r for r in reponses_ia}
+                    st.success(
+                        f"{len(reponses_ia)} reponse(s) suggeree(s). Verifie et ajuste les "
+                        "curseurs ci-dessous avant de calculer le score."
+                    )
+                except ValueError as exc:
+                    st.error(str(exc))
+
+    suggestions_ia = st.session_state.suggestions_ia or {}
+
     with st.form("questionnaire_form"):
         reponses: dict[int, int] = {}
         for pilier in Pilier:
             st.subheader(LIBELLE_PILIER[pilier])
             for question in [q for q in questions if q.pilier == pilier]:
-                reponses[question.id] = st.slider(question.libelle, 0, 4, 2, key=f"q_{question.id}")
+                suggestion = suggestions_ia.get(question.id)
+                valeur_defaut = suggestion["valeur"] if suggestion else 2
+                reponses[question.id] = st.slider(
+                    question.libelle, 0, 4, valeur_defaut, key=f"q_{question.id}"
+                )
+                if suggestion:
+                    st.caption(f"🤖 Suggestion IA : {suggestion['justification']}")
         valider = st.form_submit_button("Calculer mon score")
 
     if valider:
@@ -177,10 +201,12 @@ else:
         st.session_state.entreprise_id = None
         st.session_state.entreprise_nom = None
         st.session_state.scores = None
+        st.session_state.suggestions_ia = None
         st.rerun()
     if st.session_state.scores and colonne_meme_entreprise.button(
         "Refaire un diagnostic (meme entreprise)"
     ):
         st.session_state.questionnaire_id = None
         st.session_state.scores = None
+        st.session_state.suggestions_ia = None
         st.rerun()
