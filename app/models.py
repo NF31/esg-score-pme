@@ -47,6 +47,7 @@ class Question(Base):
     pilier: Mapped[Pilier] = mapped_column(Enum(Pilier))
     libelle: Mapped[str] = mapped_column(Text)
     poids: Mapped[float] = mapped_column(default=1.0)
+    esrs_standard: Mapped[str] = mapped_column(String(20), default="ESRS 2")
 
     reponses: Mapped[list["Reponse"]] = relationship(back_populates="question")
 
