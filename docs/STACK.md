@@ -104,6 +104,17 @@ l'IA n'a pas vocation a se substituer entierement au diagnostic humain. Cle `ANT
 lue via `app/config.py` (`.env`, jamais committee) ; en son absence l'extraction leve une
 erreur explicite plutot que d'echouer silencieusement, le reste de l'app fonctionne sans elle.
 
+## Décision : greenwashing par comparaison, pas par nouvel appel LLM (F15)
+
+`app/greenwashing.py` ne fait aucun appel a l'API Anthropic : il compare les suggestions deja
+extraites du rapport RSE en F14 (encore en session Streamlit) aux reponses finalement validees
+par l'utilisateur, et signale les ecarts significatifs. Alternative ecartee : un second appel
+Claude dedie a la detection d'affirmations vagues dans le texte du rapport — plus couteux (un
+appel LLM de plus par diagnostic) et moins fiable a evaluer/tester (sortie qualitative libre),
+alors que comparer deux valeurs numeriques deja disponibles est une regle simple, deterministe
+et testable sans API. Limite assumee : la detection ne fonctionne que si l'utilisateur a utilise
+l'extraction PDF (F14) sur ce questionnaire ; sans elle, aucune donnee de comparaison n'existe.
+
 ## Principe
 
 On n'ajoute une dépendance que quand la feature qui en a besoin est attaquée — pas de lib installée "au cas où". Chaque ajout doit être justifiable en une phrase face à un jury.

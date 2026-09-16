@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
 from app.extraction_pdf import extraire_reponses
+from app.greenwashing import detecter_ecarts
 from app.historique import historique_scores
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
@@ -161,6 +162,25 @@ else:
                 f"Comparaison basee sur {info_globale['nb_entreprises']} "
                 "diagnostic(s) complete(s) dans le meme secteur."
             )
+
+        if suggestions_ia:
+            with Session(engine) as db:
+                ecarts = detecter_ecarts(
+                    db, st.session_state.questionnaire_id, list(suggestions_ia.values())
+                )
+            if ecarts:
+                st.subheader("⚠️ Risques de greenwashing detectes")
+                st.caption(
+                    "Questions ou le rapport RSE suggerait une meilleure pratique que ce que "
+                    "tu as finalement valide — un ecart marque entre le discours et la realite."
+                )
+                for ecart in ecarts:
+                    st.markdown(
+                        f"- **{LIBELLE_PILIER[ecart['pilier']]}** — {ecart['libelle']} : "
+                        f"rapport {ecart['valeur_rapport']}/4 vs reponse validee "
+                        f"{ecart['valeur_reelle']}/4"
+                    )
+                    st.caption(f"_D'apres le rapport : {ecart['justification_rapport']}_")
 
         with Session(engine) as db:
             recommandations = generer_recommandations(db, st.session_state.questionnaire_id)

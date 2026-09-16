@@ -85,6 +85,16 @@ class ExtractionReponseOut(BaseModel):
     justification: str
 
 
+class GreenwashingEcartOut(BaseModel):
+    question_id: int
+    pilier: Pilier
+    libelle: str
+    valeur_rapport: int
+    valeur_reelle: int
+    ecart: int
+    justification_rapport: str
+
+
 class RecommandationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
