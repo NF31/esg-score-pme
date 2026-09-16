@@ -74,3 +74,24 @@ entreprise qui refait un diagnostic plus tard crée un nouveau `Questionnaire` r
 même entreprise plutôt que de modifier l'ancien, ce qui préserve chaque point de mesure passé.
 Dans l'interface Streamlit, "Refaire un diagnostic (meme entreprise)" permet d'enchaîner un
 nouveau questionnaire sur la même entreprise pour illustrer cette évolution.
+
+## Détection de greenwashing (F15)
+
+Après extraction PDF (F14) et validation du questionnaire, `app/greenwashing.py` compare, pour
+chaque question, la valeur suggérée par l'IA à partir du rapport RSE à la valeur finalement
+validée (ou corrigée) par l'utilisateur :
+
+```
+ecart = valeur_suggeree_par_le_rapport - valeur_reelle_validee
+```
+
+Un écart **supérieur ou égal à 2** (sur une échelle 0-4) est signalé comme risque de
+greenwashing, avec la justification que l'IA avait tirée du rapport pour ce point — c'est-à-dire
+que le rapport laissait entendre une pratique nettement plus aboutie que ce que l'entreprise
+confirme réellement.
+
+**Choix assumé** : aucun nouvel appel LLM n'est nécessaire — F15 réutilise les suggestions déjà
+extraites en F14 lors de la même session. Si l'utilisateur n'a pas utilisé l'extraction PDF, cette
+section n'apparaît simplement pas (pas de donnée de comparaison disponible). Règle simple et
+explicable, dans le même esprit que F12 : comparer deux valeurs déjà calculées plutôt que de
+demander à l'IA de juger elle-même du greenwashing.
