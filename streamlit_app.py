@@ -1,10 +1,12 @@
 """Interface Streamlit — saisie du questionnaire ESG et affichage du score."""
 
+import pandas as pd
 import streamlit as st
 from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
 from app.database import DATABASE_URL, engine
+from app.historique import historique_scores
 from app.models import Base, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.rapport import generer_rapport_pdf
 from app.recommandations import generer_recommandations
@@ -30,10 +32,21 @@ st.title("Diagnostic ESG pour PME")
 
 if "questionnaire_id" not in st.session_state:
     st.session_state.questionnaire_id = None
+    st.session_state.entreprise_id = None
     st.session_state.entreprise_nom = None
     st.session_state.scores = None
 
-if st.session_state.questionnaire_id is None:
+if st.session_state.questionnaire_id is None and st.session_state.entreprise_id is not None:
+    # Reprise d'un diagnostic pour une entreprise deja existante (cf. bouton "meme entreprise")
+    with Session(engine) as db:
+        questionnaire = Questionnaire(entreprise_id=st.session_state.entreprise_id)
+        db.add(questionnaire)
+        db.commit()
+        db.refresh(questionnaire)
+        st.session_state.questionnaire_id = questionnaire.id
+    st.rerun()
+
+elif st.session_state.questionnaire_id is None:
     with st.form("entreprise_form"):
         nom = st.text_input("Nom de l'entreprise")
         secteur = st.selectbox("Secteur d'activite", SECTEURS, index=None)
@@ -56,6 +69,7 @@ if st.session_state.questionnaire_id is None:
                 db.refresh(questionnaire)
 
                 st.session_state.questionnaire_id = questionnaire.id
+                st.session_state.entreprise_id = entreprise.id
                 st.session_state.entreprise_nom = entreprise.nom
             st.rerun()
 
@@ -144,8 +158,29 @@ else:
             mime="application/pdf",
         )
 
-    if st.button("Nouveau diagnostic"):
+        with Session(engine) as db:
+            historique = historique_scores(db, st.session_state.entreprise_id)
+        points_globaux = [point for point in historique if point.pilier is None]
+        if len(points_globaux) > 1:
+            st.subheader("📈 Evolution du score global")
+            df_historique = pd.DataFrame(
+                {
+                    "date": [point.questionnaire.created_at for point in points_globaux],
+                    "Score global": [point.valeur for point in points_globaux],
+                }
+            ).set_index("date")
+            st.line_chart(df_historique)
+
+    colonne_nouveau, colonne_meme_entreprise = st.columns(2)
+    if colonne_nouveau.button("Nouveau diagnostic"):
         st.session_state.questionnaire_id = None
+        st.session_state.entreprise_id = None
         st.session_state.entreprise_nom = None
+        st.session_state.scores = None
+        st.rerun()
+    if st.session_state.scores and colonne_meme_entreprise.button(
+        "Refaire un diagnostic (meme entreprise)"
+    ):
+        st.session_state.questionnaire_id = None
         st.session_state.scores = None
         st.rerun()
