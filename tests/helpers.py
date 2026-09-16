@@ -2,12 +2,17 @@ from app.models import Entreprise, Pilier, Question, Questionnaire, Reponse
 
 
 def creer_questionnaire(
-    db, reponses_par_pilier: dict[Pilier, list[int]], secteur: str = "Industrie manufacturiere"
+    db,
+    reponses_par_pilier: dict[Pilier, list[int]],
+    secteur: str = "Industrie manufacturiere",
+    entreprise_id: int | None = None,
 ) -> int:
-    entreprise = Entreprise(nom="Acme SARL", secteur=secteur, effectif=42)
-    db.add(entreprise)
-    db.flush()
-    questionnaire = Questionnaire(entreprise_id=entreprise.id)
+    if entreprise_id is None:
+        entreprise = Entreprise(nom="Acme SARL", secteur=secteur, effectif=42)
+        db.add(entreprise)
+        db.flush()
+        entreprise_id = entreprise.id
+    questionnaire = Questionnaire(entreprise_id=entreprise_id)
     db.add(questionnaire)
     db.flush()
 

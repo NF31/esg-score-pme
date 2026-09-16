@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models import Pilier, StatutQuestionnaire
@@ -68,6 +70,13 @@ class ComparaisonSecteurOut(BaseModel):
     pilier: Pilier | None  # None = score global
     moyenne: float
     nb_entreprises: int
+
+
+class HistoriquePointOut(BaseModel):
+    questionnaire_id: int
+    date: datetime
+    pilier: Pilier | None  # None = score global
+    valeur: float
 
 
 class RecommandationOut(BaseModel):
