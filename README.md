@@ -16,6 +16,10 @@ uv run fastapi dev main.py       # API, sur http://127.0.0.1:8000 (doc interacti
 uv run streamlit run streamlit_app.py   # interface utilisateur, sur http://127.0.0.1:8501
 ```
 
+Optionnel — pré-remplissage du questionnaire depuis un rapport RSE (PDF) via l'IA (F14) : définir
+`ANTHROPIC_API_KEY` dans un fichier `.env` à la racine (jamais commité). Sans cette clé, le reste
+de l'application fonctionne normalement.
+
 ## Qualité de code
 
 ```bash
