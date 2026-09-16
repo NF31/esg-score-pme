@@ -1,0 +1,5 @@
+# Limite la taille des fichiers uploades (F14 : rapport RSE PDF) pour eviter l'abus de
+# l'API Anthropic (payante) via des uploads volumineux repetes -- app publique sans
+# authentification, cf. docs/STACK.md.
+[server]
+maxUploadSize = 10
