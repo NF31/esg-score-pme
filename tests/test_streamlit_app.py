@@ -20,9 +20,12 @@ def test_creer_entreprise_affiche_le_questionnaire():
     at = AppTest.from_file(APP_PATH, default_timeout=TIMEOUT_CI)
     at.run()
 
-    at.text_input[0].input("Ma PME").run()
-    at.selectbox[0].select("Information et communication").run()
-    at.number_input[0].set_value(15).run()
+    # Les champs sont dans un st.form : leurs valeurs ne sont envoyees qu'avec le
+    # bouton de soumission. Un .run() entre deux saisies les reinitialise
+    # (Streamlit >= 1.67), donc on remplit tout puis on soumet en un seul run.
+    at.text_input[0].input("Ma PME")
+    at.selectbox[0].select("Information et communication")
+    at.number_input[0].set_value(15)
     at.button[0].click().run()
 
     assert not at.exception
