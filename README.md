@@ -2,7 +2,7 @@
 
 Outil de diagnostic et scoring ESG/RSE pensé pour les PME, dans le cadre de la double licence Numérique et Management (Toulouse Capitole / TSM).
 
-Démo en ligne : https://streamlit-production-6f3b.up.railway.app
+Démo en ligne : https://esg-score-pme.streamlit.app (l'application peut mettre une trentaine de secondes à se réveiller si personne ne l'a ouverte depuis quelques jours).
 
 ## Problématique
 
@@ -22,7 +22,7 @@ Face à la simplification réglementaire européenne (Omnibus/CSRD) et à l'inst
 - **Détection de greenwashing** : écart entre ce que dit le rapport et les réponses validées.
 - **Export ESRS** : rapport regroupé par standard ESRS (E1, E3, E5, S1-S4, G1, ESRS 2).
 
-Stack : FastAPI, SQLAlchemy et Alembic, PostgreSQL, Streamlit, déployé sur Railway.
+Stack : FastAPI, SQLAlchemy et Alembic, PostgreSQL, Streamlit. La démo publique tourne sur Streamlit Community Cloud.
 
 ## Setup
 
