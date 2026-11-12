@@ -48,7 +48,7 @@ avec une analyse pilotée par token depuis la CI (erreur "project not found" cô
 l'Automatic Analysis — zéro maintenance, déjà fonctionnelle — plutôt que de désactiver ce mode pour
 répliquer le pattern CI-based de kbeauty-shop.
 
-## Décision : déploiement Railway, un seul service (Streamlit) + Postgres (F08)
+## Décision : déploiement Railway, un seul service (Streamlit) + Postgres (F08, remplacé en 2026-11)
 
 Compte Railway personnel (projet `esg-score-pme`), pattern bootstrap habituel : dev sur compte
 perso, transfert au client/à l'école si besoin plus tard. Le plan gratuit limite le nombre de
@@ -65,6 +65,40 @@ d'un service API en ligne. Config Railway :
 
 Si l'API doit un jour être exposée séparément (intégrations externes), upgrade vers le plan
 Hobby ($5/mois) ou remplacement du service unique par un process manager lançant les deux apps.
+
+## Décision : démo publique sur Streamlit Community Cloud (2026-11-12)
+
+**Symptôme.** Le lien « Démo en ligne » du README renvoyait une page Railway « Application not
+found » (404), alors que le dépôt venait de passer en public.
+
+**Cause.** La période d'essai du compte Railway a pris fin. Railway a alors coupé le service
+`streamlit` et la base Postgres, sans prévenir côté dépôt : rien dans la CI ne vérifiait que la démo
+répondait encore.
+
+**Solution retenue.** Plutôt que de payer le plan Hobby (environ 5 $/mois) pour une simple démo, la
+démo publique tourne désormais sur Streamlit Community Cloud, gratuit pour un dépôt public. Aucune
+modification de code n'a été nécessaire, car l'application gérait déjà les deux cas :
+- sans `DATABASE_URL`, la configuration (`app/config.py`) bascule sur SQLite, et `streamlit_app.py`
+  crée alors le schéma (`create_all`) puis charge le questionnaire (`seed_questions`) au démarrage ;
+- Community Cloud lit directement `uv.lock`, donc les dépendances installées sont celles du projet.
+
+Réglages : dépôt `NF31/esg-score-pme`, branche `main`, fichier `streamlit_app.py`, aucun secret,
+adresse https://esg-score-pme.streamlit.app. Le redéploiement est automatique à chaque push sur
+`main`.
+
+**Limites acceptées.**
+- La base SQLite est éphémère : les diagnostics saisis disparaissent au redémarrage de l'application,
+  ce qui convient à une démo. Pour conserver les données, il suffirait de renseigner `DATABASE_URL`
+  dans les secrets vers un Postgres gratuit (Neon par exemple) ; Alembic devrait alors être lancé à
+  la main, Community Cloud n'ayant pas d'étape de pré-déploiement.
+- Sans clé `ANTHROPIC_API_KEY`, le pré-remplissage depuis un rapport PDF (F14) affiche un message
+  d'erreur propre au lieu d'appeler l'API. La clé n'est volontairement pas configurée sur une
+  application publique sans authentification, pour éviter qu'un tiers ne consomme le crédit API.
+- Après quelques jours sans visite, l'application se met en veille et met une trentaine de secondes
+  à redémarrer.
+
+**Vérification.** Le parcours complet (création de l'entreprise, questionnaire, calcul du score) a
+été joué dans un navigateur sur l'adresse publique avant la mise à jour du README.
 
 ## Décision : import CAC40 sans score ESG invente (F10)
 

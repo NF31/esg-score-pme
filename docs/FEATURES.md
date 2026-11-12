@@ -12,7 +12,7 @@
 | F05 | API backend (FastAPI) exposant les endpoints | Prêt | Squelette + /health, 2026-09-11 |
 | F06 | Interface utilisateur simple (Streamlit) | Prêt | `streamlit_app.py`, formulaire entreprise + questionnaire + score + PDF, 2026-09-12 |
 | F07 | Persistance en base (PostgreSQL) | Prêt | `app/config.py` (pydantic-settings) + migrations Alembic (`alembic/`), `DATABASE_URL` bascule SQLite ↔ PostgreSQL sans changement de code, 2026-09-12 |
-| F08 | Déploiement (Railway/Render) | Prêt | Streamlit + PostgreSQL sur Railway (projet `esg-score-pme`), auto-deploy sur push `main`, migrations Alembic en pre-deploy, 2026-09-12 |
+| F08 | Déploiement (Railway/Render) | Prêt | Streamlit + PostgreSQL sur Railway (projet `esg-score-pme`), auto-deploy sur push `main`, migrations Alembic en pre-deploy, 2026-09-12. Démo déplacée sur Streamlit Community Cloud (SQLite) le 2026-11-12, cf. `docs/STACK.md` |
 | F09 | Tests unitaires sur le moteur de scoring | Prêt | `tests/test_scoring.py` : score min/max, pondération par poids de question, score global (moyenne égale des piliers répondus, piliers manquants ignorés), idempotence, erreurs (questionnaire introuvable/sans réponse), 2026-09-12 |
 | F09b | Lint/format (ruff check + ruff format) | Prêt | Config dans `pyproject.toml`, même règles que Atlas, 2026-09-11 |
 | F09c | CI GitHub Actions (lint + tests + SonarQube sur push/PR) | Prêt | `.github/workflows/ci.yml`, modèle Atlas (uv + ruff + pytest), 2026-09-11 |
