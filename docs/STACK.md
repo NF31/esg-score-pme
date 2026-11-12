@@ -175,6 +175,60 @@ Migration Alembic (`212d6cf5a6ac`) : colonne ajoutee nullable, backfillee par co
 libelle exact pour les questions deja seedees en base, puis passee `NOT NULL` -- pattern standard
 pour ajouter une colonne obligatoire sans casser les donnees existantes en prod.
 
+## Décision : recherche d'entreprise dans le répertoire officiel, pas de saisie libre (F17)
+
+**Problème.** L'ancien formulaire acceptait n'importe quel nom (« Lol », par exemple) et un
+secteur choisi à la main. Le diagnostic pouvait donc porter sur une entreprise qui n'existe
+pas, et la comparaison sectorielle reposait sur une déclaration non vérifiée.
+
+**Solution.** L'utilisateur cherche son entreprise par nom ou SIREN dans l'API publique
+recherche-entreprises.api.gouv.fr (déjà utilisée par F10, gratuite et sans clé). Le secteur
+vient de la section NAF officielle et l'effectif de la tranche INSEE : ce sont des données de
+référence, pas une saisie. L'entreprise est ensuite retrouvée par son SIREN, ce qui relie
+naturellement ses diagnostics successifs dans l'historique.
+
+**Règles.**
+- Seules les entreprises actives (`etat_administratif = A`) et diffusibles
+  (`statut_diffusion = O`) sont proposées : une personne qui a demandé la non-diffusion de
+  ses données n'apparaît jamais, même si l'API renvoie une fiche masquée.
+- L'API refuse les recherches de moins de 3 caractères : l'interface le dit avant l'appel.
+- Les résultats sont mis en cache une heure (`st.cache_data`) pour ne pas solliciter l'API
+  à chaque interaction.
+- Si l'API ne répond pas, un message clair s'affiche ; l'entreprise exemple (F20) reste
+  disponible.
+
+## Décision : entreprise exemple isolée du benchmark (F20)
+
+Pour qu'un visiteur voie la page de résultats complète sans remplir 24 questions, un bouton
+charge une entreprise fictive avec trois diagnostics et quatre concurrents fictifs. Le
+projet refuse d'inventer des scores pour de vraies entreprises (cf. F10) : ces données sont
+donc marquées `est_exemple`, signalées comme fictives dans leur nom et à l'écran, et la
+comparaison sectorielle ne mélange jamais exemples et vraies entreprises. Les réponses sont
+fixes, pour que la démo soit identique à chaque chargement.
+
+## Décision : réponses conservées d'un pilier à l'autre avec `persist_state` (F18)
+
+Le questionnaire n'affiche qu'un pilier à la fois. Par défaut, Streamlit oublie la valeur
+d'un widget qui n'est plus affiché ; chaque question utilise donc `persist_state="page"`,
+qui garde la réponse quand on change de pilier, sans code de synchronisation maison.
+
+## Leçon : tester les migrations sur PostgreSQL, pas seulement SQLite (F18)
+
+**Symptôme.** La migration `1a799d950536` passait sur SQLite mais échouait sur PostgreSQL :
+`column "effort" is of type effort but expression is of type character varying`.
+
+**Cause.** SQLite n'a pas de vrai type énuméré et accepte du texte partout. PostgreSQL crée
+un type `effort` et refuse une mise à jour typée `VARCHAR` dans cette colonne.
+
+**Solution.** Dans le backfill, la colonne est déclarée avec le même `sa.Enum` que la
+migration, pour que SQLAlchemy envoie la bonne conversion. Vérification faite avec un
+PostgreSQL 16 jetable lancé par Docker (montée, descente, remontée).
+
+**Point ouvert.** Sur PostgreSQL, descendre jusqu'à `base` puis remonter échoue sur la
+migration initiale (`type "pilier" already exists`) : `f59cf2863c16` ne supprime pas ses
+types énumérés au `downgrade`. Sans effet en production (on ne redescend jamais à zéro),
+mais à corriger dans un ticket dédié.
+
 ## Principe
 
 On n'ajoute une dépendance que quand la feature qui en a besoin est attaquée — pas de lib installée "au cas où". Chaque ajout doit être justifiable en une phrase face à un jury.

@@ -38,8 +38,10 @@ après correction d'une réponse.
 ## Comparaison sectorielle (F11)
 
 `/questionnaires/{id}/comparaison-sectorielle` renvoie, pour chaque pilier et le score
-global, la moyenne des scores des **autres** questionnaires `TERMINE` d'entreprises du
-même secteur (le questionnaire courant est exclu de sa propre moyenne). Aucun score
+global, la moyenne des scores des questionnaires `TERMINE` des **autres** entreprises du
+même secteur. Depuis F20, les anciens diagnostics de la même entreprise sont eux aussi
+exclus : ce sont des points d'historique, pas des concurrents. Les entreprises fictives de
+la démo (`est_exemple`) ne se comparent qu'entre elles. Aucun score
 ESG n'est inventé pour les entreprises importées en F10 (CAC40) : elles n'ont pas de
 questionnaire complété, donc ne contribuent à aucune moyenne tant qu'aucun diagnostic
 réel n'est fait en leur nom. Condition nécessaire pour que le secteur soit un critère de
@@ -61,6 +63,33 @@ question à poids 3.0 répondue 1/4 (gain 9) a plus d'impact sur le score qu'une
 poids 1.0 répondue 0/4 (gain 1), même si sa réponse est moins mauvaise en apparence — c'est
 elle le vrai "quick win". Les réponses déjà maximales (4/4) sont exclues, aucun gain
 possible. Règle simple et explicable, pas de modèle ni d'IA nécessaire pour cette feature.
+
+### Plan d'action : gain en points et effort (F19)
+
+Depuis F19, le gain est aussi exprimé en **points de score global**, ce qu'un dirigeant
+comprend directement :
+
+```
+gain_pilier = (4 - valeur_reponse) * poids_question / (somme des poids du pilier * 4) * 100
+gain_points = gain_pilier / nombre de piliers répondus
+```
+
+Chaque question porte un **effort** estimé (faible, moyen, élevé) pour l'action conseillée
+(`app/seed.py`). Le plan d'action est trié par `gain_points / coût de l'effort` (1, 2 ou 3),
+puis par gain : une action facile qui rapporte 3 points passe devant une action lourde qui
+en rapporte 4. Les niveaux d'effort sont une estimation pour une PME type, pas une mesure.
+
+## Note de A à E (F19)
+
+Le score global est traduit en une note lisible d'un coup d'œil, comme une étiquette
+énergie : A à partir de 80, B de 65 à 79, C de 50 à 64, D de 35 à 49, E en dessous de 35
+(`app/notation.py`). Ces seuils sont un choix de lisibilité, pas une norme réglementaire.
+
+## Profil par thème ESRS (F19)
+
+Le radar de la page de résultats montre, pour chaque standard ESRS couvert, la moyenne
+simple des réponses ramenée sur 100 (`scores_par_esrs` dans `app/esrs.py`). C'est un profil
+descriptif : il ne remplace pas le score par pilier, qui reste la référence.
 
 ## Historique des scores (F13)
 
