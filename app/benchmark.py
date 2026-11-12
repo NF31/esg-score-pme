@@ -26,8 +26,11 @@ def comparer_secteur(db: Session, questionnaire_id: int) -> dict[Pilier | None, 
         .options(joinedload(Score.questionnaire))
         .filter(
             Entreprise.secteur == entreprise.secteur,
+            # Les entreprises fictives de la demo ne se comparent qu'entre elles (F20)
+            Entreprise.est_exemple == entreprise.est_exemple,
             Questionnaire.statut == StatutQuestionnaire.TERMINE,
-            Questionnaire.id != questionnaire_id,
+            # Les anciens diagnostics de la meme entreprise ne sont pas des concurrents
+            Questionnaire.entreprise_id != questionnaire.entreprise_id,
         )
         .all()
     )

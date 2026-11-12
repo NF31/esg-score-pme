@@ -8,7 +8,7 @@ ce module ne définit que le schéma ORM.
 import enum
 from datetime import UTC, datetime
 
-from sqlalchemy import Enum, ForeignKey, String, Text
+from sqlalchemy import Enum, ForeignKey, String, Text, false
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -43,6 +43,8 @@ class Entreprise(Base):
     secteur: Mapped[str] = mapped_column(String(100))
     effectif: Mapped[int]
     siren: Mapped[str | None] = mapped_column(String(9), unique=True, nullable=True)
+    # Entreprise fictive de la demo (F20) : jamais melangee aux vraies dans le benchmark
+    est_exemple: Mapped[bool] = mapped_column(default=False, server_default=false())
     created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(UTC))
 
     questionnaires: Mapped[list["Questionnaire"]] = relationship(back_populates="entreprise")

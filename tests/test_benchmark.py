@@ -57,3 +57,13 @@ def test_comparer_secteur_exclut_les_questionnaires_non_termines(db):
 def test_comparer_secteur_questionnaire_introuvable_leve_une_erreur(db):
     with pytest.raises(ValueError, match="introuvable"):
         comparer_secteur(db, 999)
+
+
+def test_comparer_secteur_ignore_les_anciens_diagnostics_de_la_meme_entreprise(db):
+    premier = creer_questionnaire(db, {Pilier.SOCIAL: [0]})
+    calculer_scores(db, premier)
+    entreprise_id = db.get(Questionnaire, premier).entreprise_id
+    second = creer_questionnaire(db, {Pilier.SOCIAL: [4]}, entreprise_id=entreprise_id)
+    calculer_scores(db, second)
+
+    assert comparer_secteur(db, second) == {}
