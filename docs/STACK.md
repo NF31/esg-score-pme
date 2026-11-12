@@ -79,7 +79,8 @@ répondait encore.
 démo publique tourne désormais sur Streamlit Community Cloud, gratuit pour un dépôt public. Aucune
 modification de code n'a été nécessaire, car l'application gérait déjà les deux cas :
 - sans `DATABASE_URL`, la configuration (`app/config.py`) bascule sur SQLite, et `streamlit_app.py`
-  crée alors le schéma (`create_all`) puis charge le questionnaire (`seed_questions`) au démarrage ;
+  crée alors le schéma (`preparer_base_sqlite`, voir la leçon sur le schéma SQLite périmé) puis
+  charge le questionnaire (`seed_questions`) au démarrage ;
 - Community Cloud lit directement `uv.lock`, donc les dépendances installées sont celles du projet.
 
 Réglages : dépôt `NF31/esg-score-pme`, branche `main`, fichier `streamlit_app.py`, aucun secret,
@@ -228,6 +229,32 @@ PostgreSQL 16 jetable lancé par Docker (montée, descente, remontée).
 migration initiale (`type "pilier" already exists`) : `f59cf2863c16` ne supprime pas ses
 types énumérés au `downgrade`. Sans effet en production (on ne redescend jamais à zéro),
 mais à corriger dans un ticket dédié.
+
+## Leçon : une base SQLite d'une ancienne version fait planter la démo (2026-11-12)
+
+**Symptôme.** Juste après le déploiement de F17 à F20, la démo publique affichait dès
+l'ouverture `sqlalchemy.exc.OperationalError` sur `seed_questions`, à la ligne
+`db.query(Question).count()`.
+
+**Cause.** Sur Streamlit Community Cloud, l'application tourne en SQLite, dans un fichier
+`esg.db` créé par la version précédente. Au démarrage, `Base.metadata.create_all` crée les
+tables manquantes mais n'ajoute jamais de colonne à une table existante : les nouvelles
+colonnes (`questions.aide`, `action`, `effort`, `entreprises.est_exemple`) n'existaient pas,
+d'où une erreur « no such column » à la première requête. Les tests partaient toujours d'une
+base neuve et ne pouvaient pas voir le problème.
+
+**Solution.** Correctif immédiat : un redémarrage de l'application (« Reboot app » sur
+share.streamlit.io) a remis le serveur à neuf, donc sans ancien fichier. Correctif durable :
+`preparer_base_sqlite` (`app/database.py`) compare les colonnes de chaque table existante
+avec les modèles ; si une colonne manque, la base SQLite est vidée puis recréée. C'est
+acceptable parce qu'une base SQLite ne contient ici que des données de démo ou de test ;
+PostgreSQL reste géré par Alembic, qui conserve les données. `tests/test_database.py`
+reproduit l'incident avec une table `questions` de l'ancienne version. Le scénario a aussi été
+rejoué avec la vraie version précédente de l'application : base créée par elle, puis nouvelle
+version lancée dessus, sans erreur.
+
+**À retenir.** Quand un ticket ajoute une colonne, tester aussi le passage de l'ancienne
+version à la nouvelle, pas seulement une installation neuve.
 
 ## Principe
 
