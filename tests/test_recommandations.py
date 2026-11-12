@@ -1,6 +1,6 @@
 import pytest
 
-from app.models import Entreprise, Pilier, Question, Questionnaire, Reponse
+from app.models import Effort, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.recommandations import NB_RECOMMANDATIONS, generer_recommandations
 from tests.helpers import creer_questionnaire
 
@@ -71,3 +71,40 @@ def test_recommandations_sans_reponse_leve_une_erreur(db):
 def test_recommandations_questionnaire_introuvable_leve_une_erreur(db):
     with pytest.raises(ValueError, match="introuvable"):
         generer_recommandations(db, 999)
+
+
+def test_recommandations_preferent_le_faible_effort_a_gain_proche(db):
+    entreprise = Entreprise(nom="Acme SARL", secteur="Industrie manufacturiere", effectif=42)
+    db.add(entreprise)
+    db.flush()
+    questionnaire = Questionnaire(entreprise_id=entreprise.id)
+    db.add(questionnaire)
+    db.flush()
+
+    action_lourde = Question(
+        pilier=Pilier.SOCIAL, libelle="Q lourde", poids=1.0, effort=Effort.ELEVE
+    )
+    action_legere = Question(
+        pilier=Pilier.SOCIAL, libelle="Q legere", poids=1.0, effort=Effort.FAIBLE
+    )
+    db.add_all([action_lourde, action_legere])
+    db.flush()
+    # La question lourde rapporte plus de points (0/4) mais coute 3 fois plus d'effort
+    db.add(Reponse(questionnaire_id=questionnaire.id, question_id=action_lourde.id, valeur=0))
+    db.add(Reponse(questionnaire_id=questionnaire.id, question_id=action_legere.id, valeur=1))
+    db.commit()
+
+    recommandations = generer_recommandations(db, questionnaire.id)
+
+    assert [r.question_id for r in recommandations] == [action_legere.id, action_lourde.id]
+
+
+def test_gain_points_exprime_en_points_de_score_global(db):
+    # 2 piliers repondus, 2 questions de poids 1 dans le pilier Environnement :
+    # passer une reponse de 0 a 4 fait gagner 50 points au pilier, donc 25 au global.
+    questionnaire_id = creer_questionnaire(db, {Pilier.ENVIRONNEMENT: [0, 4], Pilier.SOCIAL: [4]})
+
+    recommandations = generer_recommandations(db, questionnaire_id)
+
+    assert len(recommandations) == 1
+    assert recommandations[0].gain_points == pytest.approx(25)

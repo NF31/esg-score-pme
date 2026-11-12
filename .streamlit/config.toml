@@ -3,3 +3,9 @@
 # authentification, cf. docs/STACK.md.
 [server]
 maxUploadSize = 10
+
+[theme]
+base = "light"
+primaryColor = "#0F766E"
+linkColor = "#0F766E"
+chartCategoricalColors = ["#0F766E", "#2563EB", "#D97706", "#7C3AED"]

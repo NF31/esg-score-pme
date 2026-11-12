@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.models import Pilier, StatutQuestionnaire
+from app.models import Effort, Pilier, StatutQuestionnaire
 from app.secteurs import SECTEURS
 
 
@@ -103,3 +103,8 @@ class RecommandationOut(BaseModel):
     libelle: str
     valeur_actuelle: int
     gain_potentiel: float
+    action: str | None
+    effort: Effort
+    gain_points: float = Field(
+        description="Points de score global gagnes si la reponse passe a 4/4"
+    )

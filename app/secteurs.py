@@ -31,3 +31,36 @@ LIBELLE_SECTION_NAF = {
 }
 
 SECTEURS = sorted(LIBELLE_SECTION_NAF.values())
+
+# Libelles accentues pour l'affichage : les libelles ci-dessus restent la cle stockee en
+# base (comparaison sectorielle, API), on ne les modifie donc pas.
+AFFICHAGE_SECTEUR = {
+    "Agriculture, sylviculture et peche": "Agriculture, sylviculture et pêche",
+    "Production et distribution d'energie": "Production et distribution d'énergie",
+    "Production et distribution d'eau, gestion des dechets": (
+        "Production et distribution d'eau, gestion des déchets"
+    ),
+    "Industrie manufacturiere": "Industrie manufacturière",
+    "Commerce, reparation d'automobiles et de motocycles": (
+        "Commerce, réparation d'automobiles et de motocycles"
+    ),
+    "Hebergement et restauration": "Hébergement et restauration",
+    "Activites financieres et d'assurance": "Activités financières et d'assurance",
+    "Activites immobilieres": "Activités immobilières",
+    "Activites specialisees, scientifiques et techniques": (
+        "Activités spécialisées, scientifiques et techniques"
+    ),
+    "Activites de services administratifs et de soutien": (
+        "Activités de services administratifs et de soutien"
+    ),
+    "Sante humaine et action sociale": "Santé humaine et action sociale",
+    "Arts, spectacles et activites recreatives": "Arts, spectacles et activités récréatives",
+    "Autres activites de services": "Autres activités de services",
+    "Activites des menages employeurs": "Activités des ménages employeurs",
+    "Activites extra-territoriales": "Activités extra-territoriales",
+    "Non classe": "Non classé",
+}
+
+
+def libelle_secteur(secteur: str) -> str:
+    return AFFICHAGE_SECTEUR.get(secteur, secteur)

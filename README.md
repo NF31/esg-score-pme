@@ -10,17 +10,22 @@ Face à la simplification réglementaire européenne (Omnibus/CSRD) et à l'inst
 
 ## Fonctionnalités
 
-- **Diagnostic** : questionnaire de 24 questions (8 par pilier environnement, social,
-  gouvernance), score global et par pilier, rapport PDF.
+- **Recherche de l'entreprise** : par nom ou SIREN dans le répertoire officiel des
+  entreprises ; secteur et effectif sont remplis à partir des données INSEE.
+- **Diagnostic** : 24 questions (8 par pilier environnement, social, gouvernance) avec des
+  réponses en langage clair, un pilier à la fois, puis une note de A à E, un score par pilier
+  et un rapport PDF.
 - **Comparaison sectorielle** : score de l'entreprise face à la moyenne des diagnostics
   réellement complétés dans son secteur (aucun score inventé).
-- **Recommandations priorisées** : actions classées par gain potentiel (poids de la question ×
-  marge de progression).
+- **Plan d'action** : actions concrètes classées par points gagnés pour le moins d'effort.
+- **Profil ESRS** : radar des scores par thème (climat, eau, salariés, éthique...).
 - **Historique** : évolution du score d'une même entreprise dans le temps.
 - **Pré-remplissage par IA** : extraction des réponses depuis un rapport RSE en PDF, toujours
   validées par l'utilisateur avant enregistrement.
 - **Détection de greenwashing** : écart entre ce que dit le rapport et les réponses validées.
 - **Export ESRS** : rapport regroupé par standard ESRS (E1, E3, E5, S1-S4, G1, ESRS 2).
+- **Entreprise exemple** : un bouton charge un diagnostic fictif complet pour découvrir
+  l'outil sans rien remplir.
 
 Stack : FastAPI, SQLAlchemy et Alembic, PostgreSQL, Streamlit. La démo publique tourne sur Streamlit Community Cloud.
 
