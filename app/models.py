@@ -22,6 +22,14 @@ class Pilier(enum.Enum):
     GOUVERNANCE = "gouvernance"
 
 
+class Effort(enum.Enum):
+    """Effort estime pour mettre en oeuvre l'action conseillee d'une question (F19)."""
+
+    FAIBLE = "faible"
+    MOYEN = "moyen"
+    ELEVE = "eleve"
+
+
 class StatutQuestionnaire(enum.Enum):
     EN_COURS = "en_cours"
     TERMINE = "termine"
@@ -48,6 +56,9 @@ class Question(Base):
     libelle: Mapped[str] = mapped_column(Text)
     poids: Mapped[float] = mapped_column(default=1.0)
     esrs_standard: Mapped[str] = mapped_column(String(20), default="ESRS 2")
+    aide: Mapped[str | None] = mapped_column(Text, nullable=True)
+    action: Mapped[str | None] = mapped_column(Text, nullable=True)
+    effort: Mapped[Effort] = mapped_column(Enum(Effort), default=Effort.MOYEN)
 
     reponses: Mapped[list["Reponse"]] = relationship(back_populates="question")
 
