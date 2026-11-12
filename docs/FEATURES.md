@@ -43,7 +43,7 @@
 | F17 | Recherche d'une vraie entreprise (nom ou SIREN) | Prêt | `rechercher_entreprises` + `enregistrer_entreprise` dans `app/import_entreprises.py` : API recherche-entreprises.api.gouv.fr, entreprises actives et diffusibles uniquement, secteur (section NAF) et tranche d'effectif INSEE remplis automatiquement, réutilisation de l'entreprise par SIREN pour l'historique ; plus de saisie libre, 2026-11-12 |
 | F18 | Questionnaire en langage clair, pilier par pilier | Prêt | Échelle 0-4 formulée en phrases (« Non » à « Oui, mesuré et suivi »), aide sous chaque question (colonne `questions.aide`, migration `1a799d950536`), un pilier à la fois avec progression, calcul bloqué tant qu'une question manque, 2026-11-12 |
 | F19 | Page de résultats et plan d'action | Prêt | Note A à E (`app/notation.py`), barres par pilier face au secteur, radar par thème ESRS (`scores_par_esrs`), points forts et faibles, plan d'action classé par gain de points / effort (colonnes `questions.action` et `questions.effort`), 2026-11-12 |
-| F20 | Entreprise exemple en un clic | Prêt | `app/exemple.py` : entreprise fictive avec 3 diagnostics et 4 concurrents fictifs, marqués `est_exemple` (migration `ac52d7cbe4ad`) et jamais mélangés aux vraies entreprises dans le benchmark, 2026-11-12 |
+| F20 | Entreprise exemple en un clic | Prêt | `app/exemple.py` : entreprise fictive avec 3 diagnostics et 4 concurrents fictifs, marqués `est_exemple` (migration `ac52d7cbe4ad`) et jamais mélangés aux vraies entreprises dans le benchmark, 2026-11-12. Bandeau de l'exemple placé avant la recherche sur l'accueil, pour qu'un visiteur pressé voie le résultat sans rien remplir, 2026-11-12 |
 
 ## Hors périmètre (assumé)
 - Pas de vrai partenariat entreprise (étude sur données publiques)

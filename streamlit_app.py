@@ -6,7 +6,7 @@ import streamlit as st
 from sqlalchemy.orm import Session
 
 from app.benchmark import comparer_secteur
-from app.database import DATABASE_URL, engine
+from app.database import DATABASE_URL, engine, preparer_base_sqlite
 from app.esrs import ESRS_LABELS, LIBELLES_COURTS_ESRS, scores_par_esrs
 from app.exemple import charger_exemple
 from app.export_esrs import generer_export_esrs
@@ -19,7 +19,7 @@ from app.import_entreprises import (
     enregistrer_entreprise,
     rechercher_entreprises,
 )
-from app.models import Base, Effort, Entreprise, Pilier, Question, Questionnaire, Reponse
+from app.models import Effort, Entreprise, Pilier, Question, Questionnaire, Reponse
 from app.notation import note_lettre
 from app.rapport import generer_rapport_pdf
 from app.recommandations import generer_recommandations
@@ -45,9 +45,9 @@ ECHELLE = {
 LIBELLE_EFFORT = {Effort.FAIBLE: "Faible", Effort.MOYEN: "Moyen", Effort.ELEVE: "Élevé"}
 
 # En PostgreSQL le schéma est géré par Alembic (`alembic upgrade head`) ;
-# create_all reste utile en SQLite pour le dev rapide et la démo publique.
+# en SQLite (dev rapide, démo publique), la base est recréée si son schéma est périmé.
 if DATABASE_URL.startswith("sqlite"):
-    Base.metadata.create_all(engine)
+    preparer_base_sqlite(engine)
 with Session(engine) as _db:
     seed_questions(_db)
 
@@ -165,9 +165,24 @@ st.title("Diagnostic ESG pour PME")
 # --- Etape 1 : trouver son entreprise -------------------------------------------------
 if st.session_state.etape == "entreprise":
     st.markdown(
-        "Un diagnostic en 10 minutes : un score par pilier, une comparaison avec votre "
-        "secteur et un plan d'action concret."
+        "Un score par pilier, une comparaison avec votre secteur et un plan d'action "
+        "concret, à partir de 24 questions qui se répondent chacune en un clic."
     )
+
+    # L'exemple passe avant la recherche : un visiteur pressé voit le résultat sans rien remplir.
+    with st.container(border=True, horizontal=True, vertical_alignment="center"):
+        with st.container(width="stretch", gap=None):
+            st.markdown("**Envie de voir le résultat d'abord ?**")
+            st.caption(
+                "Une entreprise exemple déjà remplie, avec son historique et des "
+                "concurrents du même secteur. Données fictives."
+            )
+        st.button(
+            "Essayer avec un exemple",
+            icon=":material/play_arrow:",
+            on_click=ouvrir_exemple,
+            width="content",
+        )
 
     with st.container(border=True):
         with st.form("form_recherche", border=False):
@@ -223,14 +238,6 @@ if st.session_state.etape == "entreprise":
                             on_click=choisir_entreprise,
                             args=(choisie,),
                         )
-
-    with st.container(border=True):
-        st.markdown("**Juste envie de voir le résultat ?**")
-        st.caption(
-            "Chargez une entreprise exemple déjà remplie, avec un historique et des "
-            "concurrents du même secteur. Les données d'exemple sont fictives."
-        )
-        st.button("Essayer avec un exemple", icon=":material/play_arrow:", on_click=ouvrir_exemple)
 
 # --- Etape 2 : questionnaire, pilier par pilier --------------------------------------
 elif st.session_state.etape == "questionnaire":
